@@ -11,9 +11,19 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import environ
+
+env=environ.Env()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+#---------------------STATIC----------------------------
+STATIC_URL = "/staticfiles/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+#---------------------STATIC----------------------------
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +35,7 @@ SECRET_KEY = 'django-insecure-obx%n=c8tl&_5ri#&w)j3$i1hrt)w3ddyb%w=@))&!hmtz9+%$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["sokolovbiz.ru", "85.126.130.28",]
 
 
 # Application definition
@@ -41,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'corsheaders',
+    'gunicorn',
 ]
 
 MIDDLEWARE = [
@@ -87,6 +98,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'rdcapp_db',
+        # env.db()
     }
 }
 
