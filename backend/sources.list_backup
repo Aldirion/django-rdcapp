@@ -1,0 +1,26 @@
+# # extensively as that contained in the main release, although it includes
+# # newer versions of some applications which may provide useful features.
+# # Also, please note that software in backports WILL NOT receive any review
+# # or updates from the Ubuntu security team.
+deb http://nova.clouds.archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+# deb-src http://nova.clouds.archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+
+deb http://security.ubuntu.com/ubuntu jammy-security main restricted
+# deb-src http://security.ubuntu.com/ubuntu jammy-security main restricted
+deb http://security.ubuntu.com/ubuntu jammy-security universe
+# deb-src http://security.ubuntu.com/ubuntu jammy-security universe
+deb http://security.ubuntu.com/ubuntu jammy-security multiverse
+# deb-src http://security.ubuntu.com/ubuntu jammy-security multiverse
+                                                                                 53,1          Bot:
+
+E: The repository 'http://dl.google.com/linux/chrome/deb stable InRelease' is not signed.
+E: The repository 'http://ru.archive.ubuntu.com/ubuntu trusty-security InRelease' is not signed.
+E: The repository 'http://ru.archive.ubuntu.com/ubuntu trusty-updates InRelease' is not signed.
+E: The repository 'http://ru.archive.ubuntu.com/ubuntu trusty-proposed InRelease' is not signed.
+E: The repository 'http://ru.archive.ubuntu.com/ubuntu trusty-backports InRelease' is not signed.
+E: The repository 'http://ru.archive.ubuntu.com/ubuntu trusty Release' is not signed.
+E: The repository 'http://extras.ubuntu.com/ubuntu trusty Release' is not signed.
+E: The repository 'http://archive.canonical.com/ubuntu trusty Release' is not signed.
+E: The repository 'http://ppa.launchpad.net/boomaga/ppa/ubuntu trusty InRelease' is not signed.
+E: The repository 'http://ppa.launchpad.net/banshee-team/ppa/ubuntu trusty Release' is not signed.
+E: The repository 'http://ppa.launchpad.net/claws-mail/ppa/ubuntu trusty Release' is not signed.
