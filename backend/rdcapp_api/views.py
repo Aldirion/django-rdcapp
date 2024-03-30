@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic import ListView
 
 from django.contrib.auth.models import Group, User
 from rest_framework import permissions, viewsets, status
@@ -56,4 +57,31 @@ class EmployeeView(APIView):
         serializer=EmployeeSerializer(employees, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 # Create your views here.
+class RegionEmployeeView(APIView):
+    def get(self, request, regionid, *args, **kwargs):
+        #Получение всех сотрудников в регионе
+        queryset=Employee.objects.all().filter(regionid=regionid)
+        #Получение всех должностей
+        postset=Post.objects.all()
+        posts=set()
+        response_dict={}
+        #Получение числа сотрудников в регионе
+        response_dict.update({"total_count":len(queryset)})
+        #Получение id всех должностей в регионе
+        for employee in queryset:
+            if employee.postid not in posts:
+                posts.add(employee.postid)
+        #Формирование структуры словарь словарей с массивом словарей
+        for post in posts:
+            employee_by_post_list=[]
+            for employee in queryset:
+                if employee.postid==post:
+                    employee_by_post_list.append(employee)
+            response_dict.update({
+                postset.get(id=post).title:{"count":len(employee_by_post_list), "data":EmployeeSerializer(employee_by_post_list, many=True).data}
+                })
+        #Отправка ответа
+        return Response(response_dict, status=status.HTTP_200_OK)
+
+    
 

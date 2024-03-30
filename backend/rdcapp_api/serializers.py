@@ -16,6 +16,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model=Employee
         fields='__all__'
 
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Post
+        fields='__all__'
+
 class UPDEmployeeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model=Employee

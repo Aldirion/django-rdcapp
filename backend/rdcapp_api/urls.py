@@ -11,5 +11,12 @@ from rdcapp_api import views
 
 urlpatterns = [
     path('employee', views.EmployeeView.as_view()),
-    path('region', views.RegionView.as_view())
+    path('region', views.RegionView.as_view()),
+    #Список сотрудников региона
+    path('region/<int:regionid>/', include([
+        path('employee', views.RegionEmployeeView.as_view()),
+        
+    ]
+    )
+    )
 ]

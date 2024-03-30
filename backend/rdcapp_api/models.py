@@ -169,6 +169,9 @@ class AuthGroup(models.Model):
     class Meta:
         managed = False
         db_table = 'auth_group'
+    
+    def __str__ (self):
+        return "{}".format(self.name)
 
 
 class AuthGroupPermissions(models.Model):
@@ -180,6 +183,9 @@ class AuthGroupPermissions(models.Model):
         managed = False
         db_table = 'auth_group_permissions'
         unique_together = (('group', 'permission'),)
+    
+    def __str__ (self):
+        return "{}, {}: {}".format(self.id, self.group, self.permission)
 
 
 class AuthPermission(models.Model):
@@ -191,6 +197,9 @@ class AuthPermission(models.Model):
         managed = False
         db_table = 'auth_permission'
         unique_together = (('content_type', 'codename'),)
+
+    def __str__ (self):
+        return "{}, {}, {}".format(self.codename, self.name, self.content_type)
 
 
 class AuthUser(models.Model):
