@@ -1,2 +1,0 @@
-ID;Title;TypeID;SignID;MunicipalityID;RegionID;IsAdviserPostIntroduced;EmployeeID;INN;Address;Contingent
-Не заполняется;Текст(из реестра);В соответствии с таблицей EduInstTypeSpr;В соответствии с таблицей EduInstSignSpr;В соответствии с таблицей MunicipalitySpr;В соответствии с таблицей RegionSpr;Булева переменная (0,1);UUID из таблицы Employee;текст(из реестра);текст(из реестра);целое число
