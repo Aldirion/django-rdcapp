@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'djoser',
     'corsheaders',
     'gunicorn',
+    'import_export'
 ]
 
 MIDDLEWARE = [
@@ -97,7 +98,7 @@ WSGI_APPLICATION = 'rdc_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'rdcapp_db',
+        'NAME': 'rdc_db',
         # env.db()
     }
 }

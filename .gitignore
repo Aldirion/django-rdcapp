@@ -23,3 +23,14 @@ dist/
 
 #vscode
 .vscode
+
+#datasets
+*.sql
+*.dump
+
+static/
+data/
+
+*.xlsx
+*.xlsm
+*.csv

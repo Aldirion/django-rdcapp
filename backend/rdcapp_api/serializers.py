@@ -13,15 +13,14 @@ class RegionSerializer(serializers.ModelSerializer):
 
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Employee
-        fields='__all__'
-
+        model = Employee
+        fields = ('id', 'firstname', 'lastname', 'patronymic', 'email', 'quote', 'region_id')
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Post
-        fields='__all__'
+        model = Post
+        fields = '__all__'
 
 class UPDEmployeeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model=Employee
-        fields='__all__'
+        model = Employee
+        fields = '__all__'

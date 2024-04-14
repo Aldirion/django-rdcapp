@@ -8,18 +8,28 @@
 from django.db import models
 
 
+# class Department(models.Model):
+#     id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
+#     title = models.CharField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
+#     managmentid = models.IntegerField(db_column='ManagmentID', blank=True, null=True)  # Field name made lowercase.
+
+#     class Meta:
+#         managed = False
+#         db_table = 'Department'
+class Management(models.Model):
+    title = models.CharField()
+
 class Department(models.Model):
-    id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    title = models.CharField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
-    managmentid = models.IntegerField(db_column='ManagmentID', blank=True, null=True)  # Field name made lowercase.
+    title = models.CharField()
+    managment = models.ForeignKey(Management)
 
-    class Meta:
-        managed = False
-        db_table = 'Department'
-
+class Post(models.Model):
+    title = models.CharField()
+    department = models.ForeignKey(Department, null=True)
+    priority = models.IntegerField(default = 0)
 
 class District(models.Model):
-    districtid = models.AutoField(db_column='DistrictID', primary_key=True)  # Field name made lowercase.
+    # districtid = models.AutoField(db_column='DistrictID', primary_key=True)  # Field name made lowercase.
     title = models.CharField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
