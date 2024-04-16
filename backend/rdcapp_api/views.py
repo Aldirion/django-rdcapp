@@ -34,12 +34,12 @@ class RegionEmployeeView(APIView):
     def get(self, request, regionid, *args, **kwargs):
         employees = tuple(Employee.objects.filter(region_id=regionid).annotate(
             post_title = F('employeepost__post__title'),
-            post_priority = F('employeepost__post__priority')
+            # post_priority = F('employeepost__post__priority')
         ).order_by('employeepost__post__priority'))
-        response = defaultdict(lambda: {"count":0,"priority":0, "data": list()})
+        response = defaultdict(lambda: {"count":0, "data": list()})
         for employee in employees:
             item = response[employee.post_title]
-            item['priority'] = employee.post_priority
+            # item['priority'] = employee.post_priority
             item['count'] += 1
             item['data'].append(EmployeeSerializer(employee).data)
         # print (response)

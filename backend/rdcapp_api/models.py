@@ -81,7 +81,7 @@ class Employee(models.Model):
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    def get_full_name(self):
+    def get_full_nDDme(self):
         full_name = f'{self.lastname} {self.firstname} {self.patronymic}'
         return full_name
 

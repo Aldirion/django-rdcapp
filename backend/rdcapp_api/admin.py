@@ -74,14 +74,18 @@ class PostAdmin(ImportExportActionModelAdmin):
     # inlines = [DistrictImageInline]
 
 
+class EmployeeAdmin(admin.ModelAdmin):
+    raw_id_fields = ['user']
 
+    class Meta:
+        model = Employee
 
 # Register your models here.
 
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Region, RegionAdmin)
 admin.site.register(Municipality, MunicipalityAdmin)
-admin.site.register(Employee)
+admin.site.register(Employee, EmployeeAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Subdivision, SubdivisionAdmin)
 admin.site.register(EmployeePost)
