@@ -16,22 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-# from rest_framework import routers
-# from rdcapp_api import views
 from rdcapp_api import urls as api_urls
 
-# router = routers.DefaultRouter()
-# router.register(r'employee', views.EmployeeViewSet)
-# router.register(r'municipality', views.MunicipalityViewSet)
-# router.register(r'region', views.RegionViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/v1/', include(api_urls))
-    # path('api/v1/', include('rdcapp.urls'))
-    # path('api/', admin.site.urls)
-    # path('employee/all', EmployeeViewSet.as_view())
+    path('api/v1/', include(api_urls)),
+    path('__debug__/', include('debug_toolbar.urls')),
+    
 ]
-
-# urlpatterns+=router.urls

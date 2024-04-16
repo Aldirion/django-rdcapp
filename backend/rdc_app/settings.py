@@ -35,7 +35,7 @@ SECRET_KEY = 'django-insecure-obx%n=c8tl&_5ri#&w)j3$i1hrt)w3ddyb%w=@))&!hmtz9+%$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["sokolovbiz.ru", "85.126.130.28", "localhost", "5.35.87.82"]
+ALLOWED_HOSTS = ["sokolovbiz.ru", "85.126.130.28", "localhost", "5.35.87.82", "185.199.108.153", "185.199.109.153", "127.0.0.1"]
 
 
 # Application definition
@@ -52,6 +52,14 @@ INSTALLED_APPS = [
     'djoser',
     'corsheaders',
     'gunicorn',
+    'import_export', 
+    'debug_toolbar'
+]
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
 ]
 
 MIDDLEWARE = [
@@ -63,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
 ROOT_URLCONF = 'rdc_app.urls'
@@ -97,7 +106,7 @@ WSGI_APPLICATION = 'rdc_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'rdcapp_db',
+        'NAME': 'rdc_db',
         # env.db()
     }
 }

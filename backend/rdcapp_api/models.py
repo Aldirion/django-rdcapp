@@ -1,277 +1,134 @@
 from django.db import models
+from django.utils import timezone
+from django.core.validators import RegexValidator, MinLengthValidator
+from django.contrib.auth.models import User
 
-# Create your models here.
-
-class Department(models.Model):
-    id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    title = models.CharField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
-    managmentid = models.IntegerField(db_column='ManagmentID', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'Department'
-
-
+#Модели региональной информации
 class District(models.Model):
-    districtid = models.AutoField(db_column='DistrictID', primary_key=True)  # Field name made lowercase.
-    title = models.CharField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
+    title = models.CharField()
+    def __str__(self):
+        return self.title
+    
+class Region(models.Model):
+    title = models.CharField()
+    district = models.ForeignKey(District, on_delete = models.CASCADE)
+    codegibdd = models.CharField()
+    codegost = models.CharField()
+    capital = models.CharField(blank = True, null = True)
+    population = models.IntegerField(blank = True, null = True)
+    count_school = models.IntegerField(blank = True, null = True)
+    count_spo = models.IntegerField(blank = True, null = True)
+    
+    def __str__(self):
+        return f'{self.title}| {self.population} человек, Количество школ: {self.count_school}, Количество СПО: {self.count_spo}'
 
-    class Meta:
-        managed = False
-        db_table = 'District'
+class Municipality(models.Model):
+    title = models.CharField()
+    region = models.ForeignKey(Region, on_delete=models.CASCADE)
+    count_school = models.IntegerField(blank = True, null = True)
+    count_spo = models.IntegerField(blank = True, null = True)
+    oktmo5 = models.CharField(blank = True, null = True)
 
+    def __str__(self):
+        return f'{self.title} | {self.region}'
 
-class Eduinstsign(models.Model):
-    id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    title = models.TextField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
+class Rc(models.Model):
+    region = models.ForeignKey(Region, on_delete = models.CASCADE)
+    address = models.CharField(blank = True, null = True)
+    base_organization = models.CharField(blank = True, null = True)
+    email = models.EmailField(blank = True, null = True)
 
-    class Meta:
-        managed = False
-        db_table = 'EduInstSign'
+    def __str__(self):
+        return f'{self.region}| Адрес:{self.address}'
 
+#Модели штатного расписания
+# вс
+    
+class Subdivision(models.Model):
+    title = models.CharField()
+    parent = models.ForeignKey('SubDivision', blank = True, null = True, on_delete = models.CASCADE)
+    def __str__(self):
+        return self.title
+    
+class Post(models.Model):
+    title = models.CharField()
+    priority = models.IntegerField(default = 0, null = True)
+    subdivision = models.ForeignKey(Subdivision, on_delete = models.CASCADE)
+    def __str__ (self):
+        return f'{self.title} | {self.subdivision}'
 
-class Eduinsttype(models.Model):
-    id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    title = models.TextField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'EduInstType'
-
-
-class Eduinstitution(models.Model):
-    id = models.UUIDField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    typeid = models.IntegerField(db_column='TypeID')  # Field name made lowercase.
-    signid = models.IntegerField(db_column='SignID')  # Field name made lowercase.
-    municipalityid = models.UUIDField(db_column='MunicipalityID')  # Field name made lowercase.
-    regionid = models.IntegerField(db_column='RegionID')  # Field name made lowercase.
-    isadviserpostintroduced = models.BooleanField(db_column='IsAdviserPostIntroduced')  # Field name made lowercase.
-    inn = models.TextField(db_column='INN')  # Field name made lowercase.
-    address = models.TextField(db_column='Address', blank=True, null=True)  # Field name made lowercase.
-    contingent = models.IntegerField(db_column='Contingent', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'EduInstitutionSpr'
-
-
+#Модель сотрудника
 class Employee(models.Model):
-    id = models.UUIDField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    created = models.DateTimeField(db_column='Created', blank=True, null=True)  # Field name made lowercase.
-    joindate = models.DateField(db_column='JoinDate', blank=True, null=True)  # Field name made lowercase.
-    isactive = models.BooleanField(db_column='IsActive')  # Field name made lowercase.
-    fireddate = models.DateField(db_column='FiredDate', blank=True, null=True)  # Field name made lowercase.
-    login = models.CharField(db_column='Login')  # Field name made lowercase.
-    firstname = models.CharField(db_column='FirstName')  # Field name made lowercase.
-    lastname = models.CharField(db_column='LastName')  # Field name made lowercase.
-    patronymic = models.CharField(db_column='Patronymic', blank=True, null=True)  # Field name made lowercase.
-    regionid = models.IntegerField(db_column='RegionID')  # Field name made lowercase.
-    postid = models.IntegerField(db_column='PostID')  # Field name made lowercase.
-    departmentid = models.IntegerField(db_column='DepartmentID', blank=True, null=True)  # Field name made lowercase.
-    managmentid = models.IntegerField(db_column='ManagmentID')  # Field name made lowercase.
-    tablenumber = models.CharField(db_column='TableNumber')  # Field name made lowercase.
-    dateofbirth = models.DateField(db_column='DateOfBirth', blank=True, null=True)  # Field name made lowercase.
-    email = models.CharField(db_column='Email', blank=True, null=True)  # Field name made lowercase.
-    phone = models.CharField(db_column='Phone', blank=True, null=True)  # Field name made lowercase.
-    telegramnik = models.CharField(db_column='TelegramNik', blank=True, null=True)  # Field name made lowercase.
-    quote = models.TextField(db_column='Quote', blank=True, null=True)  # Field name made lowercase.
+    SEX_CHOICES = (
+        (0, "Мужской"),
+        (1, "Женский")
+    )
+    created = models.DateTimeField(editable=False, auto_now_add=True)
+    modified = models.DateTimeField(null=True, auto_now=True)
+    firstname = models.CharField()
+    lastname = models.CharField()
+    patronymic = models.CharField(blank=True, null=True)
+    dateofbirth = models.DateField(blank=True, null=True)
+    sex = models.IntegerField(choices=SEX_CHOICES)
+    snils_regex = RegexValidator(regex=r'^\d{3}-\d{3}-\d{3} \d{2}$')
+    snils = models.CharField(validators=[snils_regex], blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone_regex = RegexValidator(regex=r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$')
+    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True, null=True)
+    telegram_regex = RegexValidator(regex=r'?:@|(?:(?:(?:https?://)?t(?:elegram)?)\.me\/))(\w{4,})$')
+    telegram_username = models.CharField(validators=[telegram_regex], blank=True, null=True)
+    quote = models.CharField(blank=True, null=True)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    class Meta:
-        managed = False
-        db_table = 'Employee'
-
-
-    def get_full_name(self):
-        full_name = "{} {} {}".format(self.lastname, self.firstname, self.patronymic)
+    def get_full_nDDme(self):
+        full_name = f'{self.lastname} {self.firstname} {self.patronymic}'
         return full_name
 
     def __str__ (self):
-        return "{}, {}, Табельный номер:{}".format(self.id, self.get_full_name(), self.tablenumber)
-
-
-class Management(models.Model):
-    id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    title = models.CharField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'Management'
+        return f'{self.get_full_name()}'
+    
+class EmployeePost(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    tab_number = models.CharField()
+    rate = models.FloatField()
+    TYPE_EMPLOYMENT_CHOICES = (
+        (0, "Основное место работы"),
+        (1, "Внутреннее совмещение"),
+        (2, "Внешнее совмещение"),
+    )
+    employment = models.IntegerField(choices=TYPE_EMPLOYMENT_CHOICES)
+    join_date = models.DateField(blank=True, null=True)
+    fired_date = models.DateField(blank=True, null=True)
 
     def __str__ (self):
-        return "Код управления: {}, {}".format(self.id,self.title)
+        return f'{self.employee} : {self.tab_number}'
 
 
-class Municipality(models.Model):
-    id = models.UUIDField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    title = models.TextField(db_column='Title')  # Field name made lowercase.
-    regionid = models.IntegerField(db_column='RegionID')  # Field name made lowercase.
+#Модели образовательной организации
+class EduInstitution(models.Model):
+    TYPE_CHOICES = (
+        (0, "Школа"),
+        (1, "СПО"),
+    )
+    SIGN_CHOICES = (
+        (0, "Головное учреждение"),
+        (1, "Филиал"),
+        (2, "Представительство"),
+        (3, "Обособленное структурное подразделение"),
+    )
+    type = models.IntegerField(choices=TYPE_CHOICES)
+    sign = models.IntegerField(choices=SIGN_CHOICES, default=0)
+    municipality = models.ForeignKey(Municipality, on_delete=models.CASCADE)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE)
+    is_adviser_post_introduced = models.BooleanField()
+    inn = models.CharField(max_length=10, validators=[MinLengthValidator(10)])
+    kpp = models.CharField(max_length=9, validators=[MinLengthValidator(9)])
+    title = models.CharField()
+    address = models.CharField(blank=True, null=True)
+    contingent = models.IntegerField(blank=True, null=True)
 
-    class Meta:
-        managed = False
-        db_table = 'Municipality'
-
-    def __str__(self):
-        return "{}, {}, {}".format(self.id, self.title, self.regionid)
-
-
-class Post(models.Model):
-    id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    title = models.CharField(db_column='Post', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'Post'
-    
-    def __str__ (self):
-        return "Код должности: {}, {}".format(self.id, self.title)
-
-
-class Rc(models.Model):
-    id = models.UUIDField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    regionid = models.IntegerField(db_column='RegionID')  # Field name made lowercase.
-    address = models.TextField(db_column='Address', blank=True, null=True)  # Field name made lowercase. This field type is a guess.
-    baseorganization = models.TextField(db_column='BaseOrganization', blank=True, null=True)  # Field name made lowercase.
-    email = models.TextField(db_column='Email', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'RC'
-
-
-class Region(models.Model):
-    regionid = models.AutoField(db_column='RegionID', primary_key=True)  # Field name made lowercase.
-    title = models.CharField(db_column='Title', blank=True, null=True)  # Field name made lowercase.
-    dsid = models.ForeignKey(District, models.DO_NOTHING, db_column='DSID', blank=True, null=True)  # Field name made lowercase.
-    codegibdd = models.CharField(db_column='CodeGIBDD', blank=True, null=True)  # Field name made lowercase.
-    codegost = models.CharField(db_column='CodeGOST', blank=True, null=True)  # Field name made lowercase.
-    capital = models.TextField(db_column='Capital', blank=True, null=True)  # Field name made lowercase.
-    population = models.IntegerField(db_column='Population', blank=True, null=True)  # Field name made lowercase.
-    regionheadid = models.UUIDField(db_column='RegionHeadID', blank=True, null=True)  # Field name made lowercase.
-    rcid = models.IntegerField(db_column='RCID', blank=True, null=True)  # Field name made lowercase.
-    indicator = models.SmallIntegerField(db_column='Indicator', blank=True, null=True)  # Field name made lowercase.
-    countschool = models.IntegerField(db_column='CountSchool', blank=True, null=True)  # Field name made lowercase.
-    countspo = models.IntegerField(db_column='CountSPO', blank=True, null=True)  # Field name made lowercase.
-
-    
-
-    class Meta:
-        managed = False
-        db_table = 'Region'
-    
-    def __str__(self):
-        return "{}:{}, Код ГИБДД: {}, {} человек".format(self.codegost, self.title, self.codegibdd, self.population)
-
-
-
-class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=150)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group'
-
-
-class AuthGroupPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group_permissions'
-        unique_together = (('group', 'permission'),)
-
-
-class AuthPermission(models.Model):
-    name = models.CharField(max_length=255)
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-    codename = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_permission'
-        unique_together = (('content_type', 'codename'),)
-
-
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField()
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.BooleanField()
-    is_active = models.BooleanField()
-    date_joined = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
-
-
-class AuthUserGroups(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_groups'
-        unique_together = (('user', 'group'),)
-
-
-class AuthUserUserPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_user_permissions'
-        unique_together = (('user', 'permission'),)
-
-
-class DjangoAdminLog(models.Model):
-    action_time = models.DateTimeField()
-    object_id = models.TextField(blank=True, null=True)
-    object_repr = models.CharField(max_length=200)
-    action_flag = models.SmallIntegerField()
-    change_message = models.TextField()
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'django_admin_log'
-
-
-class DjangoContentType(models.Model):
-    app_label = models.CharField(max_length=100)
-    model = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'django_content_type'
-        unique_together = (('app_label', 'model'),)
-
-
-class DjangoMigrations(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
-class DjangoSession(models.Model):
-    session_key = models.CharField(primary_key=True, max_length=40)
-    session_data = models.TextField()
-    expire_date = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_session'
+class EduInstitutionEmployee(models.Model):
+    edu_institution = models.ForeignKey(EduInstitution, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
