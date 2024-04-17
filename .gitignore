@@ -34,3 +34,6 @@ data/
 *.xlsx
 *.xlsm
 *.csv
+
+# Ignore prod envs
+envs/prod/db.env

@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from rdcapp_api import urls as api_urls
+from apps.rdcapp_api import urls as api_urls
 
 
 urlpatterns = [

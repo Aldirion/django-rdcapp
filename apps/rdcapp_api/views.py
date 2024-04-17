@@ -12,14 +12,14 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 
-from rdcapp_api.serializers import *
+from .serializers import *
 
 #Отображение регионов/региона
 class RegionView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user.id
         params = request.query_params
-        print(f"CODEGOST: {params.get("codegost", None)}")
+        print(f"CODEGOST: {params.get('codegost', None)}")
         if (params.get("codegost", None) != None):
             codeGost = params.get("codegost", None)
             print(f"CODEGOST_p: {codeGost}")

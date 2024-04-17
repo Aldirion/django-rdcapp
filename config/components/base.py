@@ -18,11 +18,11 @@ env=environ.Env()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 #---------------------STATIC----------------------------
 STATIC_URL = "/staticfiles/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR.parent, "static")
 #---------------------STATIC----------------------------
 
 
@@ -33,9 +33,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 SECRET_KEY = 'django-insecure-obx%n=c8tl&_5ri#&w)j3$i1hrt)w3ddyb%w=@))&!hmtz9+%$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["sokolovbiz.ru", "85.126.130.28", "localhost", "5.35.87.82", "185.199.108.153", "185.199.109.153", "127.0.0.1"]
+ALLOWED_HOSTS = [""]
 
 
 # Application definition
@@ -47,19 +47,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rdcapp_api',
+    'apps.rdcapp_api',
     'rest_framework',
     'djoser',
     'corsheaders',
     'gunicorn',
     'import_export', 
-    'debug_toolbar'
-]
-
-INTERNAL_IPS = [
-    # ...
-    "127.0.0.1",
-    # ...
 ]
 
 MIDDLEWARE = [
@@ -71,10 +64,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
-ROOT_URLCONF = 'rdc_app.urls'
+ROOT_URLCONF = 'config.urls'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -97,7 +89,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'rdc_app.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
@@ -106,8 +98,10 @@ WSGI_APPLICATION = 'rdc_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'rdc_db',
-        # env.db()
+        'HOST': 'db',
+        'NAME': os.environ['POSTGRES_DB'],
+        'USER': os.environ['POSTGRES_USER'],
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
     }
 }
 
@@ -144,16 +138,16 @@ CORS_ALLOW_CREDENTIALS=True
 #                       'content-type', 'accept', 'origin', 'Authorization',
 #                       'access-control-allow-methods', 'Access-Control-Allow-Origin')
 CORS_ALLOW_HEADERS = [
-'accept',
-'accept-encoding',
-'authorization',
-'content-type',
-'dnt',
-'origin',
-'user-agent',
-'x-csrftoken',
-'x-requested-with',
-'access-control-allow-origin'
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'access-control-allow-origin'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
