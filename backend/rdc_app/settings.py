@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'gunicorn',
     'import_export', 
+<<<<<<< Updated upstream:backend/rdc_app/settings.py
     'debug_toolbar'
 ]
 
@@ -60,6 +61,10 @@ INTERNAL_IPS = [
     # ...
     "127.0.0.1",
     # ...
+=======
+    'rest_framework_simplejwt',
+
+>>>>>>> Stashed changes:config/components/base.py
 ]
 
 MIDDLEWARE = [
@@ -78,6 +83,9 @@ ROOT_URLCONF = 'rdc_app.urls'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
     'PAGE_SIZE': 15
 }
 
@@ -178,12 +186,12 @@ CORS_ALLOW_METHODS = (
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
 

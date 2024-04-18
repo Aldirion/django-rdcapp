@@ -3,66 +3,76 @@ from django.utils import timezone
 from django.core.validators import RegexValidator, MinLengthValidator
 from django.contrib.auth.models import User
 
-#Модели региональной информации
+
+# Модели региональной информации
 class District(models.Model):
     title = models.CharField()
+
     def __str__(self):
         return self.title
-    
+
+
 class Region(models.Model):
     title = models.CharField()
-    district = models.ForeignKey(District, on_delete = models.CASCADE)
+    district = models.ForeignKey(District, on_delete=models.CASCADE)
     codegibdd = models.CharField()
     codegost = models.CharField()
-    capital = models.CharField(blank = True, null = True)
-    population = models.IntegerField(blank = True, null = True)
-    count_school = models.IntegerField(blank = True, null = True)
-    count_spo = models.IntegerField(blank = True, null = True)
-    
+    capital = models.CharField(blank=True, null=True)
+    population = models.IntegerField(blank=True, null=True)
+    count_school = models.IntegerField(blank=True, null=True)
+    count_spo = models.IntegerField(blank=True, null=True)
+
     def __str__(self):
-        return f'{self.title}| {self.population} человек, Количество школ: {self.count_school}, Количество СПО: {self.count_spo}'
+        return f"{self.title}| {self.population} человек, Количество школ: {self.count_school}, Количество СПО: {self.count_spo}"
+
 
 class Municipality(models.Model):
     title = models.CharField()
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
-    count_school = models.IntegerField(blank = True, null = True)
-    count_spo = models.IntegerField(blank = True, null = True)
-    oktmo5 = models.CharField(blank = True, null = True)
+    count_school = models.IntegerField(blank=True, null=True)
+    count_spo = models.IntegerField(blank=True, null=True)
+    oktmo5 = models.CharField(blank=True, null=True)
 
     def __str__(self):
-        return f'{self.title} | {self.region}'
+        return f"{self.title} | {self.region}"
+
 
 class Rc(models.Model):
-    region = models.ForeignKey(Region, on_delete = models.CASCADE)
-    address = models.CharField(blank = True, null = True)
-    base_organization = models.CharField(blank = True, null = True)
-    email = models.EmailField(blank = True, null = True)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE)
+    address = models.CharField(blank=True, null=True)
+    base_organization = models.CharField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
 
     def __str__(self):
-        return f'{self.region}| Адрес:{self.address}'
+        return f"{self.region}| Адрес:{self.address}"
 
-#Модели штатного расписания
+
+# Модели штатного расписания
 # вс
-    
+
+
 class Subdivision(models.Model):
     title = models.CharField()
-    parent = models.ForeignKey('SubDivision', blank = True, null = True, on_delete = models.CASCADE)
+    parent = models.ForeignKey(
+        "SubDivision", blank=True, null=True, on_delete=models.CASCADE
+    )
+
     def __str__(self):
         return self.title
-    
+
+
 class Post(models.Model):
     title = models.CharField()
-    priority = models.IntegerField(default = 0, null = True)
-    subdivision = models.ForeignKey(Subdivision, on_delete = models.CASCADE)
-    def __str__ (self):
-        return f'{self.title} | {self.subdivision}'
+    priority = models.IntegerField(default=0, null=True)
+    subdivision = models.ForeignKey(Subdivision, on_delete=models.CASCADE)
 
-#Модель сотрудника
+    def __str__(self):
+        return f"{self.title} | {self.subdivision}"
+
+
+# Модель сотрудника
 class Employee(models.Model):
-    SEX_CHOICES = (
-        (0, "Мужской"),
-        (1, "Женский")
-    )
+    SEX_CHOICES = ((0, "Мужской"), (1, "Женский"))
     created = models.DateTimeField(editable=False, auto_now_add=True)
     modified = models.DateTimeField(null=True, auto_now=True)
     firstname = models.CharField()
@@ -70,24 +80,33 @@ class Employee(models.Model):
     patronymic = models.CharField(blank=True, null=True)
     dateofbirth = models.DateField(blank=True, null=True)
     sex = models.IntegerField(choices=SEX_CHOICES)
-    snils_regex = RegexValidator(regex=r'^\d{3}-\d{3}-\d{3} \d{2}$')
+    snils_regex = RegexValidator(regex=r"^\d{3}-\d{3}-\d{3} \d{2}$")
     snils = models.CharField(validators=[snils_regex], blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    phone_regex = RegexValidator(regex=r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$')
-    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True, null=True)
-    telegram_regex = RegexValidator(regex=r'?:@|(?:(?:(?:https?://)?t(?:elegram)?)\.me\/))(\w{4,})$')
-    telegram_username = models.CharField(validators=[telegram_regex], blank=True, null=True)
+    phone_regex = RegexValidator(
+        regex=r"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
+    )
+    phone_number = models.CharField(
+        validators=[phone_regex], max_length=17, blank=True, null=True
+    )
+    telegram_regex = RegexValidator(
+        regex=r"?:@|(?:(?:(?:https?://)?t(?:elegram)?)\.me\/))(\w{4,})$"
+    )
+    telegram_username = models.CharField(
+        validators=[telegram_regex], blank=True, null=True
+    )
     quote = models.CharField(blank=True, null=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def get_full_nDDme(self):
-        full_name = f'{self.lastname} {self.firstname} {self.patronymic}'
+        full_name = f"{self.lastname} {self.firstname} {self.patronymic}"
         return full_name
 
-    def __str__ (self):
-        return f'{self.get_full_name()}'
-    
+    def __str__(self):
+        return f"{self.get_full_name()}"
+
+
 class EmployeePost(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
@@ -102,11 +121,11 @@ class EmployeePost(models.Model):
     join_date = models.DateField(blank=True, null=True)
     fired_date = models.DateField(blank=True, null=True)
 
-    def __str__ (self):
-        return f'{self.employee} : {self.tab_number}'
+    def __str__(self):
+        return f"{self.employee} : {self.tab_number}"
 
 
-#Модели образовательной организации
+# Модели образовательной организации
 class EduInstitution(models.Model):
     TYPE_CHOICES = (
         (0, "Школа"),
@@ -128,6 +147,7 @@ class EduInstitution(models.Model):
     title = models.CharField()
     address = models.CharField(blank=True, null=True)
     contingent = models.IntegerField(blank=True, null=True)
+
 
 class EduInstitutionEmployee(models.Model):
     edu_institution = models.ForeignKey(EduInstitution, on_delete=models.CASCADE)
