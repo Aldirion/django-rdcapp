@@ -2,37 +2,36 @@ version: '3.10'
 
 services:
   django:
-    build: ./backend
-    # command: python3 manage.py runserver
-    command: sh -c "gunicorn --bind 0.0.0.0:8000 ./backend/rdc_app.wsgi"
+    build:
+      context: .
+      dockerfile: ./deploy/local/django/Dockerfile
+    env_file:
+      - ./envs/local/db.env
+      - ./envs/local/django.env
     volumes:
-      - ./backend:/rdc_app
-      - static_data:/static
-    expose:
-      - 8000
-    environment:
-      - DATABASE_URL=postgresql://django:1qaz@WSX:5432/rdcapp_db
-      - DEBUG=1
+      - .:/app
+      - static_files:/static
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    networks:
+      - default_rdc_network
       
   db:
-    image: postgres:15
+    image: postgres:16
+    ports:
+      - 5433:5432
     volumes:
       - pg_data:/var/lib/postgresql/pg_data
-    expose:
-      - 5432
-    environment:
-      - POSTGRES_USER=django
-      - POSTGRES_PASSWORD=1qaz@WSX
-      - POSTGRES_DB=rdcapp_db
-  nginx:
-    image: nginx:1.25.4
-    depends_on:
-      - django
-    ports:
-      - "80:80"
-    volumes:
-      - static_data:/var/www/html/static
-      - ./nginx-conf.d:/etc/nginx/conf.d
+    env_file:
+      - ./envs/local/db.env
+    networks:
+      - default_rdc_network
+
 volumes:
   pg_data:
-  static_data:
+  static_files:
+
+networks:
+ default_rdc_network:
