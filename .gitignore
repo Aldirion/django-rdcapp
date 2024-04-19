@@ -37,3 +37,4 @@ data/
 
 # Ignore prod envs
 envs/prod/db.env
+dumps/
