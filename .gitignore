@@ -30,6 +30,7 @@ dist/
 
 static/
 data/
+staticfiles/
 
 *.xlsx
 *.xlsm
