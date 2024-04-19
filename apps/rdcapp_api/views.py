@@ -85,15 +85,13 @@ class RegionEduInstOriginView(APIView):
         # serialized_schools = SchoolSerializer(schools, many=True)
         eduinstitutions_c = defaultdict(
             lambda: {
-                "count": 0,
                 "schools": dict({"count": 0, "schools": list()}),
                 "spo": dict({"count": 0, "spo": list()}),
             }
         )
         # eduinstitutions_c = defaultdict(lambda: {"count":0, "schools":dict({"count":0, "schools":list()}), "spo":dict({"count":0, "spo":list()})})
         for eduinst in eduinstitutions:
-            item = eduinstitutions_c[eduinst.municipality.id]
-            item["count"] += 1
+            item = eduinstitutions_c[eduinst.municipality_title]
             # item['data'].append(SchoolSerializer(eduinst).data)
             if eduinst.type == 0:
                 item["schools"]["count"] += 1
@@ -107,7 +105,6 @@ class RegionEduInstOriginView(APIView):
         # print(eduinstitutions_c.values())
         response = dict(
             {
-                "count": sum(value["count"] for value in eduinstitutions_c.values()),
                 "count_schools": sum(
                     value["schools"]["count"] for value in eduinstitutions_c.values()
                 ),
