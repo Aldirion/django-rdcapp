@@ -16,6 +16,29 @@ from django.db.models import Count
 
 from .serializers import *
 
+def get_default_color_identifier(val):
+    # colors={
+    #     "0":"F85151",
+    #     "1":"F87351",
+    #     "2":"F88651",
+    #     "3":"F89C51",
+    #     "4":"F8BB51",
+    #     "5":"F8DC51",
+    #     "6":"E5F851",
+    #     "7":"CCF851",
+    #     "8":"BEF851",
+    #     "9":"51F85F",
+    #     "10":"51F897",
+    # }
+    # if val<10:
+    #     return colors["0"]
+    # elif val
+    colors=["F85151","F87351","F88651","F89C51","F8BB51","F8DC51","E5F851","CCF851","BEF851","51F85F","51F897"]
+
+    color=(255-255*val//100, 255*val//100, 0)
+    return colors[val//10]
+
+
 
 # Отображение регионов/региона
 class RegionView(APIView):
@@ -30,16 +53,9 @@ class RegionView(APIView):
             serializer = RegionSerializer(regions, many=True)
         else:
             regions = Region.objects
-            serializer = RegionSerializer(regions, many=True)
+            serializer = RegionDetailSerializer(regions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class RegionDetailView(APIView):
-    def get(self, request, *args, **kwargs):
-        regions = tuple(Region.objects)
-
-        # serializer = RegionSerializer(regions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RegionEmployeeView(APIView):

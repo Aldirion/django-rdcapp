@@ -37,7 +37,7 @@ class RegionResource(resources.ModelResource):
 
 class RegionAdmin(ImportExportActionModelAdmin):
     resource_class = RegionResource
-    list_display = [field.name for field in District._meta.fields if field.name != "id"]
+    list_display = ["title", "count_spo", "count_school"]
     list_filter = ["id"]
     # inlines = [DistrictImageInline]
 

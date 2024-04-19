@@ -12,7 +12,6 @@ from . import views
 
 urlpatterns = [
     path("region", views.RegionView.as_view()),
-    path("region_detail", views.RegionDetailView.as_view()),
     # Список сотрудников региона
     path(
         "region/<int:regionid>/",
