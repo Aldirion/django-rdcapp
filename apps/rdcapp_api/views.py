@@ -55,15 +55,15 @@ class RegionView(generics.ListAPIView):
                     type=1,
                     sign=0,
                     municipality__region_id=OuterRef('id'),
-                )
+                ).values_list('id')
             ),
             comp_count_school=SubqueryCount(
                 models.EduInstitution.objects.filter(
                     type=0,
                     sign=0,
                     municipality__region_id=OuterRef('id'),
-                )
-            ),
+                ).values_list('id')
+            )
         )
 
         codegost = self.request.query_params.get('codegost')
