@@ -24,6 +24,7 @@ class Region(models.Model):
 
     def __str__(self):
         return f"{self.title}, {self.get_total_eduinst()}"
+
     def get_total_eduinst(self):
         total = self.count_school + self.count_spo
         return total

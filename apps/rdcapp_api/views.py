@@ -1,20 +1,23 @@
-from django.shortcuts import render
-from django.views.generic import ListView
-from django.db.models import Func, F, Value
+from typing import TypedDict
+
 from collections import defaultdict
 
-from django.contrib.auth.models import Group, User
-from rest_framework import permissions, viewsets, status
-from rest_framework.views import APIView
+from django.db.models import F, OuterRef
+from django_stubs_ext import WithAnnotations
+
+from rest_framework import generics, status, views
 from rest_framework.response import Response
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from .utils import SubqueryCount
 
-from django.db.models import Count
+from . import models
+from .serializers import (
+    RegionSerializer,
+    SchoolSerializer,
+    EmployeeSerializer,
+    MunicipalitySerializer,
+)
 
-
-from .serializers import *
 
 def get_default_color_identifier(val):
     # colors={
@@ -41,84 +44,128 @@ def get_default_color_identifier(val):
 
 
 # Отображение регионов/региона
-class RegionView(APIView):
-    def get(self, request, *args, **kwargs):
-        user = request.user.id
-        params = request.query_params
-        print(f"CODEGOST: {params.get('codegost', None)}")
-        if params.get("codegost", None) != None:
-            codeGost = params.get("codegost", None)
-            print(f"CODEGOST_p: {codeGost}")
-            regions = Region.objects.filter(codegost=codeGost)
-            serializer = RegionSerializer(regions, many=True)
-        else:
-            regions = Region.objects
-            serializer = RegionDetailSerializer(regions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class RegionView(generics.ListAPIView):
+    pagination_class = None
+    serializer_class = RegionSerializer
 
-
-
-class RegionEmployeeView(APIView):
-    def get(self, request, regionid, *args, **kwargs):
-        employees = tuple(
-            Employee.objects.filter(region_id=regionid)
-            .annotate(
-                post_title=F("employeepost__post__title"),
-                # post_priority = F('employeepost__post__priority')
-            )
-            .order_by("employeepost__post__priority")
+    def get_queryset(self):
+        queryset = models.Region.objects.annotate(
+            comp_count_spo=SubqueryCount(
+                models.EduInstitution.objects.filter(
+                    type=1,
+                    sign=0,
+                    municipality__region_id=OuterRef('id'),
+                )
+            ),
+            comp_count_school=SubqueryCount(
+                models.EduInstitution.objects.filter(
+                    type=0,
+                    sign=0,
+                    municipality__region_id=OuterRef('id'),
+                )
+            ),
         )
-        response = defaultdict(lambda: {"count": 0, "data": list()})
+
+        codegost = self.request.query_params.get('codegost')
+
+        if codegost:
+            queryset = queryset.filter(
+                codegost=codegost,
+            )
+
+        return queryset
+
+
+
+class RegionEmployeeQuerySet(TypedDict):
+    post_title: str
+
+
+class RegionEmployeeView(views.APIView):
+    def get(self, request, regionid, *args, **kwargs):
+        employees: tuple[WithAnnotations[
+            models.Employee,
+            RegionEmployeeQuerySet,
+        ], ...] = tuple(
+            models.Employee.objects.filter(region_id=regionid).annotate(
+                post_title=F('employeepost__post__title'),
+            ).order_by(
+                'employeepost__post__priority'
+            )
+        )
+
+        response = defaultdict(
+            lambda: {
+                'count': 0,
+                'data': list(),
+            }
+        )
+
         for employee in employees:
             item = response[employee.post_title]
-            # item['priority'] = employee.post_priority
-            item["count"] += 1
-            item["data"].append(EmployeeSerializer(employee).data)
+            item['count'] += 1
+            item['data'].append(EmployeeSerializer(employee).data)
+
         # print (response)
         return Response(response, status=status.HTTP_200_OK)
 
 
-class RegionMunicipalityView(APIView):
+class RegionMunicipalityView(views.APIView):
     def get(self, request, regionid, *args, **kwargs):
-        municipalities = tuple(Municipality.objects.filter(region_id=regionid))
-        serializer = MunicipalitySerializer(municipalities, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        municipalities = tuple(
+            models.Municipality.objects.filter(
+                region_id=regionid
+            )
+        )
+
+        return Response(
+            MunicipalitySerializer(
+                municipalities,
+                many=True
+            ).data,
+            status=status.HTTP_200_OK
+        )
+
+class RegionEduInstOriginQuerySet(TypedDict):
+    regionid: int
+    municipality_title: str
+    region: str
 
 
-class RegionEduInstOriginView(APIView):
+# TODO: Separate on two endpoints
+class RegionEduInstOriginView(views.APIView):
     def get(self, request, regionid, *args, **kwargs):
-        eduinstitutions = tuple(
-            EduInstitution.objects.filter(sign=0)
-            .annotate(
+        eduinstitutions: tuple[
+            WithAnnotations[
+                models.EduInstitution,
+                RegionEduInstOriginQuerySet,
+            ], ...
+        ] = tuple(
+            models.EduInstitution.objects.filter(sign=0).annotate(
                 regionid=F("municipality__region__id"),
                 municipality_title=F("municipality__title"),
-                # municipality_id = F('municipality__id'),
                 region=F("municipality__region__title"),
-                # type_ = F('type')
+            ).filter(
+                regionid=regionid,
             )
-            .filter(regionid=regionid)
         )
-        # serialized_schools = SchoolSerializer(schools, many=True)
+
         eduinstitutions_c = defaultdict(
             lambda: {
                 "schools": dict({"count": 0, "schools": list()}),
                 "spo": dict({"count": 0, "spo": list()}),
             }
         )
-        # eduinstitutions_c = defaultdict(lambda: {"count":0, "schools":dict({"count":0, "schools":list()}), "spo":dict({"count":0, "spo":list()})})
+
         for eduinst in eduinstitutions:
             item = eduinstitutions_c[eduinst.municipality_title]
-            # item['data'].append(SchoolSerializer(eduinst).data)
             if eduinst.type == 0:
                 item["schools"]["count"] += 1
                 item["schools"]["schools"].append(SchoolSerializer(eduinst).data)
             else:
                 item["spo"]["count"] += 1
                 item["spo"]["spo"].append(SchoolSerializer(eduinst).data)
-        # response = defaultdict(lambda: {"count":0, "data":list()})
-        # for municipalities in eduinstitutions_c:
-        #     item = response[]
-        # print(eduinstitutions_c.values())
+
         response = dict(
             {
                 "count_schools": sum(
@@ -133,18 +180,17 @@ class RegionEduInstOriginView(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class MunicipalityEduInstOriginView(APIView):
+# TODO: Separate on two endpoints
+class MunicipalityEduInstOriginView(views.APIView):
     def get(self, request, regionid, municipalityid, *args, **kwargs):
-        municipality = Municipality.objects.filter(id=municipalityid)
+        municipality = models.Municipality.objects.filter(id=municipalityid)
         if municipality[0].region.id != regionid:
             return Response(
                 "Указанный муниципалитет не входит в состав выбранного региона",
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        # if municipalityid not in municipalities.:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
         eduinstitutions = tuple(
-            EduInstitution.objects.filter(municipality_id=municipalityid)
+            models.EduInstitution.objects.filter(municipality_id=municipalityid)
             .filter(sign=0)
             .annotate(
                 regionid=F("municipality__region__id"),
@@ -159,11 +205,9 @@ class MunicipalityEduInstOriginView(APIView):
             }
         )
         for eduinst in eduinstitutions:
-            # if regionid!=eduinst.regionid:
-            #     return Response("Указанный муниципалитет не входит в состав выбранного региона", status=status.HTTP_400_BAD_REQUEST)
             item = response[eduinst.municipality.id]
             item["count"] += 1
-            # item['data'].append(SchoolSerializer(eduinst).data)
+
             if eduinst.type == 0:
                 item["schools"]["count"] += 1
                 item["schools"]["schools"].append(SchoolSerializer(eduinst).data)
