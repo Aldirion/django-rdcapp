@@ -18,10 +18,15 @@ from django.contrib import admin
 from django.urls import include, path
 from apps.rdcapp_api import urls as api_urls
 
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/v1/', include(api_urls)),
-    path('__debug__/', include('debug_toolbar.urls')),
 ]
+
+# if settings.DEBUG:
+#     urlpatterns += [
+#         path('__debug__/', include('debug_toolbar.urls')),
+#     ]
