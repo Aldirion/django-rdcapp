@@ -8,31 +8,41 @@ class MunicipalitySerializer(serializers.ModelSerializer):
         model = models.Municipality
         fields: tuple[str, ...] = (
             # Model Fields
-            'id',
-            'title',
-            'region'
+            "id",
+            "title",
+            "region",
         )
 
 
 class RegionSerializer(serializers.ModelSerializer):
     comp_count_spo = serializers.IntegerField()
     comp_count_school = serializers.IntegerField()
+    comp_indicator_count_eduinst = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Region
         fields: tuple[str, ...] = (
             # Model Fields
-            'id',
-            'title',
-            'district',
-            'codegibdd',
-            'codegost',
-            'population',
-            'count_school',
-            'count_spo',
+            "id",
+            "title",
+            "district",
+            "codegibdd",
+            "codegost",
+            "population",
+            "count_school",
+            "count_spo",
             # Annotated Fields
-            'comp_count_spo',
-            'comp_count_school',
+            "comp_count_spo",
+            "comp_count_school",
+            "comp_indicator_count_eduinst",
+        )
+
+    def get_comp_indicator_count_eduinst(self, obj):
+        # color=(255-255*val//100, 255*val//100, 0)
+        return round(
+            (obj.comp_count_spo + obj.comp_count_school)
+            / (obj.count_spo + obj.count_school)
+            * 100
         )
 
 
@@ -54,50 +64,50 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = models.Employee
         fields: tuple[str, ...] = (
             # Model Fields
-            'id',
-            'firstname',
-            'lastname',
-            'patronymic',
-            'email',
-            'quote',
-            'region_id',
+            "id",
+            "firstname",
+            "lastname",
+            "patronymic",
+            "email",
+            "quote",
+            "region_id",
         )
 
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Post
-        fields = '__all__' # TODO: Do not use __all__
+        fields = "__all__"  # TODO: Do not use __all__
 
 
 class UPDEmployeeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.Employee
-        fields = '__all__' # TODO: Do not use __all__
+        fields = "__all__"  # TODO: Do not use __all__
 
 
 class EduInstTypeSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(source='get_type_display')
+    type = serializers.CharField(source="get_type_display")
 
     class Meta:
         model = models.EduInstitution
         fields: tuple[str, ...] = (
             # Model Fields
-            'type',
+            "type",
         )
 
 
 class SchoolSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(source='get_type_display')
+    type = serializers.CharField(source="get_type_display")
 
     class Meta:
         model = models.EduInstitution
         fields: tuple[str, ...] = (
             # Model Fields
-            'id',
-            'type',
-            'title',
-            'inn',
-            'kpp',
-            'contingent',
+            "id",
+            "type",
+            "title",
+            "inn",
+            "kpp",
+            "contingent",
         )
