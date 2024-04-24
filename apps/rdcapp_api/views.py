@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 # from ...models___ import Municipality
 
-from .utils import SubqueryCount
+from .utils import SubqueryCount, Subquery
 
 from . import models
 from .serializers import (
@@ -29,7 +29,7 @@ class RegionView(generics.ListAPIView):
     serializer_class = RegionSerializer
 
     def get_queryset(self):
-        queryset = models.Region.objects.annotate(
+        queryset = models.Region.objects.exclude(id=91).annotate(
             comp_count_spo=SubqueryCount(
                 models.EduInstitution.objects.filter(
                     type=1,
@@ -43,6 +43,12 @@ class RegionView(generics.ListAPIView):
                     sign=0,
                     municipality__region_id=OuterRef("id"),
                 ).values_list("id")
+            ),
+            rrc_address=Subquery(
+                models.Rc.objects.filter(region_id=OuterRef("id")).values("address"),
+            ),
+            rrc_email=Subquery(
+                models.Rc.objects.filter(region_id=OuterRef("id")).values("email"),
             ),
         )
 
@@ -93,13 +99,29 @@ class RegionEmployeeView(views.APIView):
 
 
 class RegionMunicipalityView(views.APIView):
-    def get(self, request, regionid, *args, **kwargs):
-        municipalities = tuple(models.Municipality.objects.filter(region_id=regionid))
+    pagination_class = None
+    serializer_class = MunicipalitySerializer
 
-        return Response(
-            MunicipalitySerializer(municipalities, many=True).data,
-            status=status.HTTP_200_OK,
+    def get(self, request, regionid, *args, **kwargs):
+        # regionid=self.kwargs['region']
+        queryset = models.Municipality.objects.filter(region_id=regionid).annotate(
+            comp_count_school=SubqueryCount(
+                models.EduInstitution.objects.filter(
+                    type=0,
+                    sign=0,
+                    municipality_id=OuterRef("id"),
+                ).values_list("id")
+            ),
+            comp_count_spo=SubqueryCount(
+                models.EduInstitution.objects.filter(
+                    type=1,
+                    sign=0,
+                    municipality_id=OuterRef("id"),
+                ).values_list("id")
+            ),
         )
+        serializer = MunicipalitySerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RegionEduInstOriginQuerySet(TypedDict):

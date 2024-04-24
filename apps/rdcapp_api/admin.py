@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     District,
+    Rc,
     Region,
     Municipality,
     Subdivision,
@@ -40,6 +41,17 @@ class RegionAdmin(ImportExportActionModelAdmin):
     list_display = ["title", "count_spo", "count_school"]
     list_filter = ["id"]
     # inlines = [DistrictImageInline]
+
+
+class RCResource(resources.ModelResource):
+    class Meta:
+        model = Rc
+
+
+class RCAdmin(ImportExportActionModelAdmin):
+    resource_class = RCResource
+    list_display = ["region", "email", "address"]
+    list_filter = ["id"]
 
 
 class MunicipalityResource(resources.ModelResource):
@@ -156,6 +168,7 @@ admin.site.register(Post, PostAdmin)
 admin.site.register(Subdivision, SubdivisionAdmin)
 admin.site.register(EmployeePost)
 admin.site.register(EduInstitution, EduInstAdmin)
+admin.site.register(Rc, RCAdmin)
 # admin.site.register(Municipality, MunicipalityInlineAdmin)
 
 # admin.site.register(User, UserAdmin)
