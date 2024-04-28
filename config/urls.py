@@ -18,11 +18,20 @@ from django.contrib import admin
 from django.urls import include, path
 from apps.rdcapp_api import urls as api_urls
 
+# from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/v1/', include(api_urls)),
-    path('__debug__/', include('debug_toolbar.urls')),
-    
 ]
+
+if settings.DEBUG:
+    from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+    urlpatterns += [
+        path('__debug__/', include('debug_toolbar.urls')),
+        path('api/schema', SpectacularAPIView.as_view(), name='schema'),
+        path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),
+    ]

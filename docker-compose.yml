@@ -23,6 +23,8 @@ services:
     ports:
       - 5433:5432
     volumes:
+      - ./dumps:/dumps
+      - ./deploy/restore_db.sh:/restore_db.sh
       - pg_data:/var/lib/postgresql/pg_data
     env_file:
       - ./envs/local/db.env

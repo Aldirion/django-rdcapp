@@ -10,8 +10,11 @@ MIDDLEWARE += [
 
 INSTALLED_APPS += [
     'debug_toolbar',
+    'drf_spectacular',
 ]
 
-INTERNAL_IPS += [
-    '127.0.0.1:8000',
-]
+REST_FRAMEWORK.update({'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'},)
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': lambda _: True,
+}

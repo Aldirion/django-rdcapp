@@ -1,33 +1,98 @@
-from pyclbr import Class
-
-# from numpy import source
+from numpy import source
 from rest_framework import serializers
-from .models import *
+
+from . import models
 
 
 class MunicipalitySerializer(serializers.ModelSerializer):
+    comp_count_spo = serializers.IntegerField()
+    comp_count_school = serializers.IntegerField()
+    comp_indicator_count_eduinst = serializers.SerializerMethodField()
+
     class Meta:
-        model = Municipality
-        fields = ("id", "title", "region")
+        model = models.Municipality
+        fields: tuple[str, ...] = (
+            # Model Fields
+            "id",
+            "title",
+            "region",
+            "oktmo5",
+            "count_school",
+            "count_spo",
+            # Annotated Fields
+            "comp_count_school",
+            "comp_count_spo",
+            # Method Fields
+            "comp_indicator_count_eduinst",
+        )
+
+    def get_comp_indicator_count_eduinst(self, obj):
+        if obj.count_school != None and obj.count_spo != None:
+            return round(
+                (obj.comp_count_spo + obj.comp_count_school)
+                / (obj.count_spo + obj.count_school)
+                * 100
+            )
+        else:
+            return 100
 
 
 class RegionSerializer(serializers.ModelSerializer):
+    # Annotated Fields
+    comp_count_spo = serializers.IntegerField()
+    comp_count_school = serializers.IntegerField()
+    comp_indicator_count_eduinst = serializers.SerializerMethodField()
+    rrc_address = serializers.CharField()
+    rrc_email = serializers.EmailField()
+
     class Meta:
-        model = Region
-        fields = "__all__"
+        model = models.Region
+        fields: tuple[str, ...] = (
+            # Model Fields
+            "id",
+            "title",
+            "district",
+            "codegibdd",
+            "codegost",
+            "population",
+            "count_school",
+            "count_spo",
+            # Annotated Fields
+            "comp_count_spo",
+            "comp_count_school",
+            "rrc_address",
+            "rrc_email",
+            # Method Fields
+            "comp_indicator_count_eduinst",
+        )
+
+    def get_comp_indicator_count_eduinst(self, obj):
+        # color=(255-255*val//100, 255*val//100, 0)
+        return round(
+            (obj.comp_count_spo + obj.comp_count_school)
+            / (obj.count_spo + obj.count_school)
+            * 100
+        )
 
 
-class RegionDetailSerializer(serializers.Serializer):
-    region = RegionSerializer
-    computed_count_school = serializers.IntegerField()
-    computed_count_spo = serializers.IntegerField()
-    indicator = serializers.IntegerField()
+class Counter:
+    def __init__(self, val):
+        self.val = val
+
+
+class CounterSerializer(serializers.Serializer):
+    val = serializers.IntegerField()
+
+
+class IntSerializer(serializers.Serializer):
+    val = serializers.IntegerField()
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Employee
-        fields = (
+        model = models.Employee
+        fields: tuple[str, ...] = (
+            # Model Fields
             "id",
             "firstname",
             "lastname",
@@ -40,34 +105,43 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Post
-        fields = "__all__"
+        model = models.Post
+        fields = "__all__"  # TODO: Do not use __all__
 
 
 class UPDEmployeeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Employee
-        fields = "__all__"
+        model = models.Employee
+        fields = "__all__"  # TODO: Do not use __all__
 
 
 class EduInstTypeSerializer(serializers.ModelSerializer):
     type = serializers.CharField(source="get_type_display")
+    sign = serializers.CharField(source="get_sign_display")
 
     class Meta:
-        model = EduInstitution
-        fields = ("type",)
+        model = models.EduInstitution
+        fields: tuple[str, ...] = (
+            # Model Fields
+            "type",
+            "sign",
+        )
 
 
 class SchoolSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(source="get_type_display")
+    # type = serializers.CharField(source="get_type_display")
+    sign = serializers.CharField(source="get_sign_display")
 
     class Meta:
-        model = EduInstitution
-        fields = (
+        model = models.EduInstitution
+        fields: tuple[str, ...] = (
+            # Model Fields
             "id",
-            "type",
+            "sign",
+            # "type",
             "title",
-            "inn",
-            "kpp",
+            # "inn",
+            # "kpp",
             "contingent",
+            "address",
         )

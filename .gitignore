@@ -4,6 +4,7 @@ __pycache__/
 
 # Файлы конфигурации для venv
 venv/
+.venv/
 .env
 
 # Файлы дистрибутивов и артефакты упаковки
@@ -30,6 +31,7 @@ dist/
 
 static/
 data/
+staticfiles/
 
 *.xlsx
 *.xlsm
@@ -37,3 +39,4 @@ data/
 
 # Ignore prod envs
 envs/prod/db.env
+dumps/

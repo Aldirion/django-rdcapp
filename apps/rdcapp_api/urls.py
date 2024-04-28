@@ -12,7 +12,6 @@ from . import views
 
 urlpatterns = [
     path("region", views.RegionView.as_view()),
-    path("region_detail", views.RegionDetailView.as_view()),
     # Список сотрудников региона
     path(
         "region/<int:regionid>/",
@@ -20,16 +19,48 @@ urlpatterns = [
             [
                 # path('profile/', profile, name='users-profile'),
                 path("employee", views.RegionEmployeeView.as_view()),
-                path("municipalities", views.RegionMunicipalityView.as_view()),
-                path("eduinstitutions/", views.RegionEduInstOriginView.as_view()),
+                # path("municipalities", views.RegionMunicipalityView.as_view()),
                 path(
-                    "municipalities/<int:municipalityid>/",
+                    "eduinstitutions/",
                     include(
                         [
+                            path("", views.RegionEduInstOriginView.as_view()),
+                            path("schools", views.RegionSchoolsOriginView.as_view()),
+                            path("spo", views.RegionSPOOriginView.as_view()),
+                        ]
+                    ),
+                ),
+                path(
+                    "municipalities/",
+                    include(
+                        [
+                            path("", views.RegionMunicipalityView.as_view()),
                             path(
-                                "eduinstitutions",
-                                views.MunicipalityEduInstOriginView.as_view(),
-                            )
+                                "<int:municipalityid>/",
+                                include(
+                                    [
+                                        path(
+                                            "eduinstitutions/",
+                                            include(
+                                                [
+                                                    path(
+                                                        "",
+                                                        views.MunicipalityEduInstOriginView.as_view(),
+                                                    ),
+                                                    path(
+                                                        "schools/",
+                                                        views.MunicipalitySchoolOriginView.as_view(),
+                                                    ),
+                                                    path(
+                                                        "spo/",
+                                                        views.MunicipalitySPOOriginView.as_view(),
+                                                    ),
+                                                ]
+                                            ),
+                                        )
+                                    ]
+                                ),
+                            ),
                         ]
                     ),
                 ),

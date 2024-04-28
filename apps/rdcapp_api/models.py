@@ -23,7 +23,11 @@ class Region(models.Model):
     count_spo = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.title}"
+        return f"{self.title}, {self.get_total_eduinst()}"
+
+    def get_total_eduinst(self):
+        total = self.count_school + self.count_spo
+        return total
 
 
 class Municipality(models.Model):
@@ -148,6 +152,9 @@ class EduInstitution(models.Model):
     address = models.CharField(blank=True, null=True)
     contingent = models.IntegerField(blank=True, null=True)
     eduenv = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.title}"
 
 
 class EduInstitutionEmployee(models.Model):
