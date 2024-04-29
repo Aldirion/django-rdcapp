@@ -369,3 +369,5 @@ class MunicipalitySPOOriginView(views.APIView):
             item["spo"].append(SchoolSerializer(eduinst).data)
 
         return Response(response, status=status.HTTP_200_OK)
+
+

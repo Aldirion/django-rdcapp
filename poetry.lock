@@ -369,6 +369,17 @@ Django = ">=3.2"
 tablib = {version = "3.5.0", extras = ["html", "ods", "xls", "xlsx", "yaml"]}
 
 [[package]]
+name = "django-jsonschema-form"
+version = "1.0.3"
+description = "Django admin widgets to render jsonschema as forms"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-jsonschema-form-1.0.3.tar.gz", hash = "sha256:543f671cb34c2b3bbe47ca6a54aeaf6802a99fe987a3431ffd86ba7e593e50c0"},
+    {file = "django_jsonschema_form-1.0.3-py3-none-any.whl", hash = "sha256:befbeaa92c662084e845fb1824f745beba667c09653cc9328aec628f3f22a703"},
+]
+
+[[package]]
 name = "django-stubs"
 version = "4.2.7"
 description = "Mypy stubs for Django"
@@ -1354,4 +1365,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "75c725b8dadc2d23eb731120133107bab376cdee5b43313e388f7cf6154bc28d"
+content-hash = "c64a3d70d2f0d6319e07abef69917dd5cf742cfb7d452c01600b4c39afc5d066"

@@ -1,7 +1,21 @@
 from django.db import models
-from django.utils import timezone
 from django.core.validators import RegexValidator, MinLengthValidator
 from django.contrib.auth.models import User
+# import rest_framework
+
+# from numpy import NaN
+from rest_framework import serializers
+
+# from pydantic import Base
+
+# import jsonschema
+import enum
+
+# import rest_framework.serializers
+from .common.validators import JSONSchemaValidator
+from .common.schemas import EDUENV_JSON_FIELD_SCHEMA
+
+# from apps.rdcapp_api.serializers import SchoolMuseumSerializer
 
 
 # Модели региональной информации
@@ -51,10 +65,7 @@ class Rc(models.Model):
         return f"{self.region}| Адрес:{self.address}"
 
 
-# Модели штатного расписания
-# вс
-
-
+# Модели структуры штатного расписания
 class Subdivision(models.Model):
     title = models.CharField()
     parent = models.ForeignKey(
@@ -151,7 +162,12 @@ class EduInstitution(models.Model):
     title = models.CharField()
     address = models.CharField(blank=True, null=True)
     contingent = models.IntegerField(blank=True, null=True)
-    eduenv = models.JSONField(blank=True, null=True)
+    # Сводная информация по воспитательной среде
+    eduenv = models.JSONField(
+        blank=True,
+        null=True,
+        validators=(JSONSchemaValidator(limit_value=EDUENV_JSON_FIELD_SCHEMA),),
+    )
 
     def __str__(self):
         return f"{self.title}"
@@ -160,3 +176,55 @@ class EduInstitution(models.Model):
 class EduInstitutionEmployee(models.Model):
     edu_institution = models.ForeignKey(EduInstitution, on_delete=models.CASCADE)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+
+
+
+#TODO Решить проблему циклического иимпорта
+# class EduInstitutionType(int, enum.Enum):
+#     SCHOOL = 0
+#     SPO = 1
+
+
+# class EduSpaceTypeItem:
+#     title: str
+#     key: str
+#     type_: EduInstitutionType
+#     serializer: serializers.Serializer
+
+
+# class EduSpaceType:
+#     # from apps.rdcapp_api.serializers import SchoolMuseumSerializer
+#     items = EduSpaceTypeItem(
+#         title="Музей",
+#         key="museum",
+#         type_=EduInstitutionType.SCHOOL,
+#         serializer=SchoolMuseumSerializer,
+#     )
+
+#     @classmethod
+#     def CHOICES(cls):
+#         return tuple(
+#             (
+#                 f"{item.key}__{item.type_}",
+#                 f"{item.title} (Школа)" if item.type_ == 0 else f"{item.title} (СПО)",
+#             )
+#             for item in cls.items
+#         )
+
+#     @classmethod
+#     def get_serializer(cls, edu_space_type):
+#         for item in cls.items:
+#             if f"{item.key}__{item.type_}" == f"{item.key}__{edu_space_type}":
+#                 return item.serializer
+#         return None
+
+
+# # Детальная информация по образовательному пространству
+# class EduSpace(models.Model):
+    
+#     edu_institution = models.ForeignKey(EduInstitution, on_delete=models.CASCADE)
+#     edu_space_type = models.CharField(choices=EduSpaceType.CHOICES())
+#     edu_space = models.JSONField(
+#         blank=True,
+#         null=True,
+#     )

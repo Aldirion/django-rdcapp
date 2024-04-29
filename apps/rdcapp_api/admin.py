@@ -134,6 +134,7 @@ class EduInstAdmin(ImportExportActionModelAdmin):
         "inn",
         "kpp",
         "title",
+        "eduenv",
     )
     list_filter = ["sign", "is_adviser_post_introduced"]
     search_fields = [
@@ -143,6 +144,17 @@ class EduInstAdmin(ImportExportActionModelAdmin):
 
     def municipality_region_title(self, obj):
         return obj.municipality.region.title
+    
+    def get_dynamic_info(self):
+        # if self.fields.__getstate__('type') == 1:
+        pass
+    
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['osm_data'] = self.get_dynamic_info()
+        return super(EduInstAdmin, self).change_view(
+            request, object_id, form_url, extra_context=extra_context,
+        )
 
 
 class EduInstInlineAdmin(admin.TabularInline):
