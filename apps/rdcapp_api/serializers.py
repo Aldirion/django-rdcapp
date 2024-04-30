@@ -1,11 +1,21 @@
-from numpy import source
+# from numpy import source
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from apps.rdcapp_api.models import (Region, Municipality, Employee, Post, EmployeePost, EduInstitution,)
-# from apps.rdcapp_api import models
+from apps.rdcapp_api.models import (
+    # EmployeePost,
+    EduInstitution,
+    EduSpace,
+    Employee,
+    Municipality,
+    Post,
+    Region,
+)
+
+from .common.validators.edu_space_validator import EduSpaceType
 
 
-
+# Region Serializers
 class RegionSerializer(serializers.ModelSerializer):
     # Annotated Fields
     comp_count_spo = serializers.IntegerField()
@@ -57,6 +67,8 @@ class CounterSerializer(serializers.Serializer):
 class IntSerializer(serializers.Serializer):
     val = serializers.IntegerField()
 
+
+# Municipality Serializers
 class MunicipalitySerializer(serializers.ModelSerializer):
     comp_count_spo = serializers.IntegerField()
     comp_count_school = serializers.IntegerField()
@@ -90,6 +102,69 @@ class MunicipalitySerializer(serializers.ModelSerializer):
         else:
             return 100
 
+
+# Employee Serializers
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username")
+
+
+class EmployeeRegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = (
+            "id",
+            "title",
+        )
+
+
+class EmployeePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        # model = models.Post
+        model = Post
+        fields = ("title", "subdivision")
+
+
+class EmployeeProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(many=False, required=True)
+    region = EmployeeRegionSerializer(many=False, required=True)
+    post_title = serializers.CharField()
+    post_subdivision = serializers.CharField()
+    tab_number = serializers.CharField()
+
+    class Meta:
+        model = Employee
+        fields = (
+            "id",
+            # "user",
+            "firstname",
+            "lastname",
+            "patronymic",
+            "post_title",
+            "post_subdivision",
+            "tab_number",
+            "email",
+            "bio",
+            "quote",
+            "phone_number",
+            "telegram_username",
+            "avatar",
+            "region",
+            "user",
+        )
+        read_only_fields = (
+            "user",
+            "firstname",
+            "lastname",
+            "patronymic",
+            "region",
+            "post_title",
+            "post_subdivision",
+            "tab_number",
+        )
+
+
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         # model = models.Employee
@@ -106,14 +181,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         )
 
 
-class PostSerializer(serializers.ModelSerializer):
-    class Meta:
-        # model = models.Post
-        model = Post
-
-        fields = "__all__"  # TODO: Do not use __all__
-
-
 class UPDEmployeeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         # model = models.Employee
@@ -121,6 +188,7 @@ class UPDEmployeeSerializer(serializers.HyperlinkedModelSerializer):
         fields = "__all__"  # TODO: Do not use __all__
 
 
+# EduInstitution Serializers
 class EduInstTypeSerializer(serializers.ModelSerializer):
     type = serializers.CharField(source="get_type_display")
     sign = serializers.CharField(source="get_sign_display")
@@ -152,22 +220,19 @@ class SchoolSerializer(serializers.ModelSerializer):
             # "kpp",
             "contingent",
             "address",
+            # "eduenv"
         )
 
 
-#TODO Решить проблему циплического импорта
+# TODO: Implement save method for Education space
+class EduSpaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        # model = models.EduSpace
+        model = EduSpace
 
-# class SchoolMuseumSerializer(serializers.Serializer):
-#     pass
-
-
-# class EduSpaceSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         # model = models.EduSpace
-#         model = EduSpace
-
-#     def save(self):
-#         edu_space_type = self.validated_data["edu_space_type"]
-#         # serializer = models.EduSpaceType.get_serializer(edu_space_type)
-#         serializer = EduSpaceType.get_serializer(edu_space_type)
-#         # super()
+    def save(self):
+        # edu_space_type = self.validated_data["edu_space_type"]
+        # serializer = models.EduSpaceType.get_serializer(edu_space_type)
+        # serializer = EduSpaceType.get_serializer(edu_space_type)
+        # super()
+        pass

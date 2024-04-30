@@ -1,26 +1,66 @@
+from collections import defaultdict
 from typing import TypedDict
 
-from collections import defaultdict
-
-from django.shortcuts import get_object_or_404, get_list_or_404
-
 from django.db.models import F, OuterRef
+from django.shortcuts import get_object_or_404
 from django_stubs_ext import WithAnnotations
-
-from rest_framework import generics, status, views
+from rest_framework import generics, permissions, status, views
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-
-# from ...models___ import Municipality
-
-from .utils import SubqueryCount, Subquery
 
 from . import models
 from .serializers import (
-    RegionSerializer,
-    SchoolSerializer,
+    EmployeeProfileSerializer,
     EmployeeSerializer,
     MunicipalitySerializer,
+    RegionSerializer,
+    SchoolSerializer,
 )
+
+# from ...models___ import Municipality
+from .utils import Subquery, SubqueryCount
+
+
+# Отображение профилей пользователей
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def get_profile(request):
+    user = request.user
+    userprofile = models.Employee.objects.annotate(
+        post_title=F("employeepost__post__title"),
+        post_subdivision=F("employeepost__post__subdivision__title"),
+        tab_number=F("employeepost__tab_number"),
+    ).get(user_id=user.id)
+    serializer = EmployeeProfileSerializer(userprofile, many=False)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def get_some_profile(request, userid):
+    userprofile = models.Employee.objects.annotate(
+        post_title=F("employeepost__post__title"),
+        post_subdivision=F("employeepost__post__subdivision__title"),
+        tab_number=F("employeepost__tab_number"),
+    ).get(user_id=userid)
+    serializer = EmployeeProfileSerializer(userprofile, many=False)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Внесение изменения в профиль пользователя
+@api_view(["PUT"])
+@permission_classes([permissions.IsAuthenticated])
+def update_profile(request):
+    user = request.user
+    userprofile = models.Employee.objects.annotate(
+        post_title=F("employeepost__post__title"),
+        post_subdivision=F("employeepost__post__subdivision__title"),
+        tab_number=F("employeepost__tab_number"),
+    ).get(user_id=user.id)
+    serializer = EmployeeProfileSerializer(userprofile, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
 
 
 # Отображение регионов/региона
@@ -124,13 +164,13 @@ class RegionMunicipalityView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# Отображение списка образовательных учреждений на уровне региона/муниципалитета
 class RegionEduInstOriginQuerySet(TypedDict):
     regionid: int
     municipality_title: str
     region: str
 
 
-# TODO: Separate on two endpoints
 class RegionEduInstOriginView(views.APIView):
     def get(self, request, regionid, *args, **kwargs):
         eduinstitutions: tuple[
@@ -269,7 +309,6 @@ class RegionSPOOriginView(views.APIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-# TODO: Separate on two endpoints
 class MunicipalityEduInstOriginView(views.APIView):
     def get(self, request, regionid, municipalityid, *args, **kwargs):
         # municipality = models.Municipality.objects.get(id=municipalityid)
@@ -369,5 +408,3 @@ class MunicipalitySPOOriginView(views.APIView):
             item["spo"].append(SchoolSerializer(eduinst).data)
 
         return Response(response, status=status.HTTP_200_OK)
-
-

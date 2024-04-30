@@ -1,23 +1,26 @@
 from django.contrib import admin
+from import_export import resources
+from import_export.admin import ImportExportActionModelAdmin
+
 from .models import (
     District,
+    EduInstitution,
+    # EduInstitutionEmployee,
+    EduSpace,
+    Employee,
+    EmployeePost,
+    Municipality,
+    Post,
     Rc,
     Region,
-    Municipality,
     Subdivision,
-    Post,
-    Employee,
-    EduInstitution,
-    EduInstitutionEmployee,
-    EmployeePost,
 )
 
-from import_export.admin import ImportExportActionModelAdmin
-from import_export import resources
-from import_export import fields
-from import_export.widgets import ForeignKeyWidget
+# from import_export import fields
+# from import_export.widgets import ForeignKeyWidget
 
 
+# District Admin Panel Import Export
 class DistrictResource(resources.ModelResource):
     # region = fields.Field(column_name = 'region', attribute = region, widget=ForeignKeyWidget(Region, 'title'))
     class Meta:
@@ -30,6 +33,7 @@ class DistrictAdmin(ImportExportActionModelAdmin):
     # inlines = [DistrictImageInline]
 
 
+# Region Admin Panel Import Export
 class RegionResource(resources.ModelResource):
     # district = fields.Field(column_name = 'district', attribute = 'district', widget=ForeignKeyWidget(District, 'id'))
     class Meta:
@@ -43,6 +47,7 @@ class RegionAdmin(ImportExportActionModelAdmin):
     # inlines = [DistrictImageInline]
 
 
+# Resource Center Admin Panel Import Export
 class RCResource(resources.ModelResource):
     class Meta:
         model = Rc
@@ -54,6 +59,7 @@ class RCAdmin(ImportExportActionModelAdmin):
     list_filter = ["id"]
 
 
+# Municipality Admin Panel Import Expot
 class MunicipalityResource(resources.ModelResource):
     # district = fields.Field(column_name = 'district', attribute = 'district', widget=ForeignKeyWidget(District, 'id'))
     class Meta:
@@ -73,6 +79,7 @@ class MunicipalityAdmin(ImportExportActionModelAdmin):
     # inlines = [DistrictImageInline]
 
 
+# SubDivision Admin Panel Import Export
 class SuvdivisionResource(resources.ModelResource):
     # district = fields.Field(column_name = 'district', attribute = 'district', widget=ForeignKeyWidget(District, 'id'))
     class Meta:
@@ -92,6 +99,7 @@ class SubdivisionAdmin(ImportExportActionModelAdmin):
     # inlines = [DistrictImageInline]
 
 
+# Post Admin Panel Import Export
 class PostResource(resources.ModelResource):
     # district = fields.Field(column_name = 'district', attribute = 'district', widget=ForeignKeyWidget(District, 'id'))
     class Meta:
@@ -108,13 +116,19 @@ class PostAdmin(ImportExportActionModelAdmin):
     # inlines = [DistrictImageInline]
 
 
+# Employee Admin Panel
 class EmployeeAdmin(admin.ModelAdmin):
     raw_id_fields = ["user"]
+    list_display = ["id", "get_full_name", "user", "region_id"]
+    list_filter = ["region"]
+    ordered_fields = ["get_full_name"]
 
+    # search_fields=["region", "get_full_name"]
     class Meta:
         model = Employee
 
 
+# EduInstitution Admin Panel Import Export
 class EduInstResource(resources.ModelResource):
     class Meta:
         model = EduInstitution
@@ -144,43 +158,30 @@ class EduInstAdmin(ImportExportActionModelAdmin):
 
     def municipality_region_title(self, obj):
         return obj.municipality.region.title
-    
+
     def get_dynamic_info(self):
         # if self.fields.__getstate__('type') == 1:
         pass
-    
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context['osm_data'] = self.get_dynamic_info()
+        extra_context["osm_data"] = self.get_dynamic_info()
         return super(EduInstAdmin, self).change_view(
-            request, object_id, form_url, extra_context=extra_context,
+            request,
+            object_id,
+            form_url,
+            extra_context=extra_context,
         )
 
 
-class EduInstInlineAdmin(admin.TabularInline):
-    model = EduInstitution
-    # list_display = ('type', 'sign', 'municipality', 'is_adviser_post_introduced', 'inn', 'kpp', 'title')
-    # list_select_related = (
-    #     'municipality__region',
-    # )
-
-
-class MunicipalityInlineAdmin(admin.ModelAdmin):
-    inlines = [EduInstInlineAdmin]
-
-
-# Register your models here.
-
+# Register models admin panel.
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Region, RegionAdmin)
 admin.site.register(Municipality, MunicipalityAdmin)
-# admin.site.register(Municipality, MunicipalityInlineAdmin)
 admin.site.register(Employee, EmployeeAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Subdivision, SubdivisionAdmin)
 admin.site.register(EmployeePost)
 admin.site.register(EduInstitution, EduInstAdmin)
 admin.site.register(Rc, RCAdmin)
-# admin.site.register(Municipality, MunicipalityInlineAdmin)
-
-# admin.site.register(User, UserAdmin)
+admin.site.register(EduSpace)

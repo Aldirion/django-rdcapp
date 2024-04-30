@@ -1,6 +1,7 @@
 # from django.conf.urls import url
-from django.urls import path, include
-from rest_framework import routers
+from django.urls import include, path
+
+# from rest_framework import routers
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -8,7 +9,6 @@ from rest_framework_simplejwt.views import (
 )
 
 from . import views
-
 
 urlpatterns = [
     path("region", views.RegionView.as_view()),
@@ -71,6 +71,7 @@ urlpatterns = [
         "auth/",
         include(
             [
+                # path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
                 path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
                 path(
                     "token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
@@ -79,4 +80,15 @@ urlpatterns = [
             ]
         ),
     ),
+    path(
+        "users/",
+        include(
+            [
+                path("me/", views.get_profile, name="profile_detail"),
+                path("me/change", views.update_profile, name="change_profile"),
+                path("<int:userid>/", views.get_some_profile),
+            ]
+        ),
+    ),
+    # path("users/me/", views.get_profile, name="profile_detail"),
 ]

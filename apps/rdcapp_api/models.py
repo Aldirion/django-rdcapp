@@ -1,21 +1,10 @@
-from django.db import models
-from django.core.validators import RegexValidator, MinLengthValidator
 from django.contrib.auth.models import User
-# import rest_framework
+from django.core.validators import MinLengthValidator, RegexValidator
+from django.db import models
 
-# from numpy import NaN
-from rest_framework import serializers
-
-# from pydantic import Base
-
-# import jsonschema
-import enum
-
-# import rest_framework.serializers
-from .common.validators import JSONSchemaValidator
 from .common.schemas import EDUENV_JSON_FIELD_SCHEMA
-
-# from apps.rdcapp_api.serializers import SchoolMuseumSerializer
+from .common.validators.edu_space_validator import EduSpaceType
+from .common.validators.json_validator import JSONSchemaValidator
 
 
 # Модели региональной информации
@@ -105,14 +94,18 @@ class Employee(models.Model):
         validators=[phone_regex], max_length=17, blank=True, null=True
     )
     telegram_regex = RegexValidator(
-        regex=r"?:@|(?:(?:(?:https?://)?t(?:elegram)?)\.me\/))(\w{4,})$"
+        regex=r"(?:@|(?:(?:(?:https?://)?t(?:elegram)?)\.me\/))(\w{4,})$"
     )
     telegram_username = models.CharField(
         validators=[telegram_regex], blank=True, null=True
     )
     quote = models.CharField(blank=True, null=True)
+    bio = models.CharField(blank=True, null=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(
+        upload_to="avatars/", default="UserProfileDefaultIcon.png"
+    )
 
     def get_full_name(self):
         full_name = f"{self.lastname} {self.firstname} {self.patronymic}"
@@ -178,53 +171,14 @@ class EduInstitutionEmployee(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
 
 
-
-#TODO Решить проблему циклического иимпорта
-# class EduInstitutionType(int, enum.Enum):
-#     SCHOOL = 0
-#     SPO = 1
+# TODO Решить проблему циклического иимпорта
 
 
-# class EduSpaceTypeItem:
-#     title: str
-#     key: str
-#     type_: EduInstitutionType
-#     serializer: serializers.Serializer
-
-
-# class EduSpaceType:
-#     # from apps.rdcapp_api.serializers import SchoolMuseumSerializer
-#     items = EduSpaceTypeItem(
-#         title="Музей",
-#         key="museum",
-#         type_=EduInstitutionType.SCHOOL,
-#         serializer=SchoolMuseumSerializer,
-#     )
-
-#     @classmethod
-#     def CHOICES(cls):
-#         return tuple(
-#             (
-#                 f"{item.key}__{item.type_}",
-#                 f"{item.title} (Школа)" if item.type_ == 0 else f"{item.title} (СПО)",
-#             )
-#             for item in cls.items
-#         )
-
-#     @classmethod
-#     def get_serializer(cls, edu_space_type):
-#         for item in cls.items:
-#             if f"{item.key}__{item.type_}" == f"{item.key}__{edu_space_type}":
-#                 return item.serializer
-#         return None
-
-
-# # Детальная информация по образовательному пространству
-# class EduSpace(models.Model):
-    
-#     edu_institution = models.ForeignKey(EduInstitution, on_delete=models.CASCADE)
-#     edu_space_type = models.CharField(choices=EduSpaceType.CHOICES())
-#     edu_space = models.JSONField(
-#         blank=True,
-#         null=True,
-#     )
+# Детальная информация по образовательному пространству
+class EduSpace(models.Model):
+    edu_institution = models.ForeignKey(EduInstitution, on_delete=models.CASCADE)
+    edu_space_type = models.CharField(choices=EduSpaceType.choices())
+    edu_space = models.JSONField(
+        blank=True,
+        null=True,
+    )

@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('rdcapp_api', '0001_initial'),
+        ("rdcapp_api", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='eduinstitution',
-            name='region',
+            model_name="eduinstitution",
+            name="region",
         ),
         migrations.AddField(
-            model_name='eduinstitution',
-            name='eduenv',
+            model_name="eduinstitution",
+            name="eduenv",
             field=models.JSONField(blank=True, null=True),
         ),
     ]
