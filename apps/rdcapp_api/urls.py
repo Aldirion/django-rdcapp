@@ -12,18 +12,18 @@ from . import views
 
 urlpatterns = [
     path("region", views.RegionView.as_view()),
+    path("eduinstitutions/<int:id>", views.EduInstitutionDetailView.as_view()),
     # Список сотрудников региона
     path(
         "region/<int:regionid>/",
         include(
             [
-                # path('profile/', profile, name='users-profile'),
                 path("employee", views.RegionEmployeeView.as_view()),
-                # path("municipalities", views.RegionMunicipalityView.as_view()),
                 path(
                     "eduinstitutions/",
                     include(
                         [
+                            path("<int:id>", views.EduInstitutionDetailView.as_view()),
                             path("", views.RegionEduInstOriginView.as_view()),
                             path("schools", views.RegionSchoolsOriginView.as_view()),
                             path("spo", views.RegionSPOOriginView.as_view()),
@@ -43,6 +43,10 @@ urlpatterns = [
                                             "eduinstitutions/",
                                             include(
                                                 [
+                                                    path(
+                                                        "<int:id>",
+                                                        views.EduInstitutionDetailView.as_view(),
+                                                    ),
                                                     path(
                                                         "",
                                                         views.MunicipalityEduInstOriginView.as_view(),
@@ -84,8 +88,7 @@ urlpatterns = [
         "users/",
         include(
             [
-                path("me/", views.get_profile, name="profile_detail"),
-                path("me/change", views.update_profile, name="change_profile"),
+                path("me/", views.profile, name="profile_detail"),
                 path("<int:userid>/", views.get_some_profile),
             ]
         ),

@@ -5,7 +5,7 @@ from import_export.admin import ImportExportActionModelAdmin
 from .models import (
     District,
     EduInstitution,
-    # EduInstitutionEmployee,
+    EduInstitutionEmployee,
     EduSpace,
     Employee,
     EmployeePost,
@@ -76,12 +76,10 @@ class MunicipalityAdmin(ImportExportActionModelAdmin):
     def region_title(self, obj):
         return obj.region.title
 
-    # inlines = [DistrictImageInline]
 
 
 # SubDivision Admin Panel Import Export
 class SuvdivisionResource(resources.ModelResource):
-    # district = fields.Field(column_name = 'district', attribute = 'district', widget=ForeignKeyWidget(District, 'id'))
     class Meta:
         model = Subdivision
 
@@ -92,29 +90,31 @@ class SubdivisionAdmin(ImportExportActionModelAdmin):
         field.name for field in Subdivision._meta.fields if field.name != "id"
     ]
     list_filter = [
-        # ("region", admin.RelatedFieldListFilter),
         "id",
         ("parent", admin.RelatedFieldListFilter),
     ]
-    # inlines = [DistrictImageInline]
 
 
 # Post Admin Panel Import Export
 class PostResource(resources.ModelResource):
-    # district = fields.Field(column_name = 'district', attribute = 'district', widget=ForeignKeyWidget(District, 'id'))
     class Meta:
         model = Post
 
 
 class PostAdmin(ImportExportActionModelAdmin):
     resource_class = PostResource
-    # list_display = [field.name for field in Subdivision._meta.fields if field.name != "id"]
-    # list_filter = [
-    #     # ("region", admin.RelatedFieldListFilter),
-    #     "id"
-    #     ]
-    # inlines = [DistrictImageInline]
 
+class EmployeeResource(resources.ModelResource):
+    class Meta:
+        model = Employee
+
+class EmployeeIEAdmin(ImportExportActionModelAdmin):
+    resource_class = EmployeeResource
+    raw_id_fields = ["user"]
+    list_display = ["id", "get_full_name", "user", "region_id"]
+    list_filter = ["region"]
+    ordered_fields = ["get_full_name"]
+    search_fields = ["id"]
 
 # Employee Admin Panel
 class EmployeeAdmin(admin.ModelAdmin):
@@ -122,6 +122,7 @@ class EmployeeAdmin(admin.ModelAdmin):
     list_display = ["id", "get_full_name", "user", "region_id"]
     list_filter = ["region"]
     ordered_fields = ["get_full_name"]
+    search_fields = ["id"]
 
     # search_fields=["region", "get_full_name"]
     class Meta:
@@ -152,6 +153,7 @@ class EduInstAdmin(ImportExportActionModelAdmin):
     )
     list_filter = ["sign", "is_adviser_post_introduced"]
     search_fields = [
+        "id",
         "title",
         "inn",
     ]
@@ -174,14 +176,42 @@ class EduInstAdmin(ImportExportActionModelAdmin):
         )
 
 
+class EmployeePostResource(resources.ModelResource):
+    class Meta:
+        model = EduInstitutionEmployee
+
+class EmployeePostAdmin(ImportExportActionModelAdmin):
+    resource_class = EmployeePostResource
+    list_display = (
+        "id",
+        "employee",
+        "post"
+    )
+
+#EduInstEmployee
+class EduInstEmployeeResource(resources.ModelResource):
+    class Meta:
+        model = EduInstitutionEmployee
+
+class EduInstEmployeeAdmin(ImportExportActionModelAdmin):
+    resource_class = EduInstEmployeeResource
+    list_display = (
+        "id",
+        "employee",
+        "edu_institution"
+    )
+    # raw_id_fields = ("employee_id", "edu_institution_id")
+    # search_fields = ("employee")
+
 # Register models admin panel.
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Region, RegionAdmin)
 admin.site.register(Municipality, MunicipalityAdmin)
-admin.site.register(Employee, EmployeeAdmin)
+admin.site.register(Employee, EmployeeIEAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Subdivision, SubdivisionAdmin)
-admin.site.register(EmployeePost)
+admin.site.register(EmployeePost, EmployeePostAdmin)
 admin.site.register(EduInstitution, EduInstAdmin)
 admin.site.register(Rc, RCAdmin)
 admin.site.register(EduSpace)
+admin.site.register(EduInstitutionEmployee, EduInstEmployeeAdmin)

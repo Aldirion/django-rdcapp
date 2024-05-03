@@ -84,9 +84,9 @@ class Employee(models.Model):
     patronymic = models.CharField(blank=True, null=True)
     dateofbirth = models.DateField(blank=True, null=True)
     sex = models.IntegerField(choices=SEX_CHOICES)
+    email = models.EmailField(blank=True, null=True)
     snils_regex = RegexValidator(regex=r"^\d{3}-\d{3}-\d{3} \d{2}$")
     snils = models.CharField(validators=[snils_regex], blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
     phone_regex = RegexValidator(
         regex=r"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
     )
@@ -104,7 +104,7 @@ class Employee(models.Model):
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(
-        upload_to="avatars/", default="UserProfileDefaultIcon.png"
+        upload_to="avatars/", default="UserProfileDefaultIcon.svg"
     )
 
     def get_full_name(self):
@@ -133,7 +133,6 @@ class EmployeePost(models.Model):
         return f"{self.employee} : {self.tab_number}"
 
 
-# Модели образовательной организации
 class EduInstitution(models.Model):
     TYPE_CHOICES = (
         (0, "Школа"),
@@ -148,7 +147,6 @@ class EduInstitution(models.Model):
     type = models.IntegerField(choices=TYPE_CHOICES)
     sign = models.IntegerField(choices=SIGN_CHOICES, default=0)
     municipality = models.ForeignKey(Municipality, on_delete=models.CASCADE)
-    # region = models.ForeignKey(Region, on_delete=models.CASCADE)
     is_adviser_post_introduced = models.BooleanField()
     inn = models.CharField(max_length=10, validators=[MinLengthValidator(10)])
     kpp = models.CharField(max_length=9, validators=[MinLengthValidator(9)])
@@ -169,9 +167,6 @@ class EduInstitution(models.Model):
 class EduInstitutionEmployee(models.Model):
     edu_institution = models.ForeignKey(EduInstitution, on_delete=models.CASCADE)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-
-
-# TODO Решить проблему циклического иимпорта
 
 
 # Детальная информация по образовательному пространству

@@ -17,6 +17,8 @@ services:
       - db
     networks:
       - default_rdc_network
+    stdin_open: true
+    tty: true
       
   db:
     image: postgres:16
