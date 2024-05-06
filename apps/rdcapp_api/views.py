@@ -3,12 +3,7 @@ from collections import defaultdict
 from email.policy import default
 from typing import TypedDict
 
-from django.db.models import (
-    F,
-    IntegerField,
-    OuterRef,
-    Count, Q, Sum
-)
+from django.db.models import F, IntegerField, OuterRef, Count, Q, Sum
 from django.db.models.fields.json import KT
 from django.db.models.functions import Cast
 from django.db.models.expressions import RawSQL
@@ -75,6 +70,21 @@ def get_some_profile(request, userid):
         post_subdivision=F("employeepost__post__subdivision__title"),
         tab_number=F("employeepost__tab_number"),
     ).get(user_id=userid)
+    user_posts = list(
+        models.EmployeePost.objects.filter(employee=userprofile)
+        .annotate(
+            post_title=F("post__title"),
+            subdivision_title=F("post__subdivision__title"),
+        )
+        .values("post_title", "subdivision_title", "tab_number")
+    )
+    user_eduinstitutions = list(
+        models.EduInstitutionEmployee.objects.filter(employee=userprofile).annotate(
+            edu_inst_title=F("edu_institution__title")
+        )
+    )
+    userprofile.posts = user_posts
+    userprofile.eduinstitutions = user_eduinstitutions
     serializer = EmployeeProfileSerializer(userprofile, many=False)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -85,17 +95,23 @@ class RegionView(views.APIView):
     serializer_class = RegionSerializer
 
     def get_school_data(self):
-        cte_queryset = models.EduInstitution.objects.annotate(
-            region_id=F("municipality__region_id")
-        ).filter(
-            type=0,
-        ).values(
-            'region_id',
-            'type',
+        cte_queryset = (
+            models.EduInstitution.objects.annotate(
+                region_id=F("municipality__region_id")
+            )
+            .filter(
+                type=0,
+            )
+            .values(
+                "region_id",
+                "type",
+            )
         )
         cte = With(cte_queryset)
 
-        queryset = models.Region.objects.exclude(id=91) # TODO: Hardcode ID is a very bad idead, better come with a better marker
+        queryset = models.Region.objects.exclude(
+            id=91
+        )  # TODO: Hardcode ID is a very bad idead, better come with a better marker
         codegost = self.request.query_params.get("codegost")
 
         if codegost:
@@ -142,17 +158,10 @@ class RegionView(views.APIView):
             )
 
         cte_queryset = cte_queryset.annotate(
-            school_total_cdi=Count(
-                RawSQL('1', ()),
-                filter=Q(eduenv__cdi=True)
-            ),
-            school_total_ssgo=Count(
-                RawSQL('1', ()),
-                filter=Q(eduenv__ssgo=True)
-            ),
+            school_total_cdi=Count(RawSQL("1", ()), filter=Q(eduenv__cdi=True)),
+            school_total_ssgo=Count(RawSQL("1", ()), filter=Q(eduenv__ssgo=True)),
             school_total_leaders_league=Count(
-                RawSQL('1', ()),
-                filter=Q(eduenv__leaders_league=True)
+                RawSQL("1", ()), filter=Q(eduenv__leaders_league=True)
             ),
         )
 
@@ -162,7 +171,7 @@ class RegionView(views.APIView):
             school_total_ssgo=RawSQL("cte.school_total_ssgo", ()),
             school_total_leaders_league=RawSQL("cte.school_total_leaders_league", ()),
         )
-        
+
         for name, lookup in school_eduenv_dict.items():
             queryset = queryset.annotate(
                 **{
@@ -180,26 +189,32 @@ class RegionView(views.APIView):
             for name in school_eduenv_dict.keys():
                 item_data[name] = getattr(item, f"school_{name}") or 0
 
-            item_data['total_cdi'] = item.school_total_cdi
-            item_data['total_ssgo'] = item.school_total_ssgo
-            item_data['total_leaders_league'] = item.school_total_leaders_league
+            item_data["total_cdi"] = item.school_total_cdi
+            item_data["total_ssgo"] = item.school_total_ssgo
+            item_data["total_leaders_league"] = item.school_total_leaders_league
 
             data[item.id] = item_data
 
         return data
-    
+
     def get_spo_data(self):
-        cte_queryset = models.EduInstitution.objects.annotate(
-            region_id=F("municipality__region_id")
-        ).filter(
-            type=1,
-        ).values(
-            'region_id',
-            'type',
+        cte_queryset = (
+            models.EduInstitution.objects.annotate(
+                region_id=F("municipality__region_id")
+            )
+            .filter(
+                type=1,
+            )
+            .values(
+                "region_id",
+                "type",
+            )
         )
         cte = With(cte_queryset)
 
-        queryset = models.Region.objects.exclude(id=91) # TODO: Hardcode ID is a very bad idead, better come with a better marker
+        queryset = models.Region.objects.exclude(
+            id=91
+        )  # TODO: Hardcode ID is a very bad idead, better come with a better marker
         codegost = self.request.query_params.get("codegost")
 
         if codegost:
@@ -237,17 +252,10 @@ class RegionView(views.APIView):
             )
 
         cte_queryset = cte_queryset.annotate(
-            spo_total_cdi=Count(
-                RawSQL('1', ()),
-                filter=Q(eduenv__cdi=True)
-            ),
-            spo_total_ssgo=Count(
-                RawSQL('1', ()),
-                filter=Q(eduenv__ssgo=True)
-            ),
+            spo_total_cdi=Count(RawSQL("1", ()), filter=Q(eduenv__cdi=True)),
+            spo_total_ssgo=Count(RawSQL("1", ()), filter=Q(eduenv__ssgo=True)),
             spo_total_leaders_league=Count(
-                RawSQL('1', ()),
-                filter=Q(eduenv__leaders_league=True)
+                RawSQL("1", ()), filter=Q(eduenv__leaders_league=True)
             ),
         )
 
@@ -257,7 +265,7 @@ class RegionView(views.APIView):
             spo_total_ssgo=RawSQL("cte.spo_total_ssgo", ()),
             spo_total_leaders_league=RawSQL("cte.spo_total_leaders_league", ()),
         )
-        
+
         for name, lookup in spo_eduenv_dict.items():
             queryset = queryset.annotate(
                 **{
@@ -275,9 +283,9 @@ class RegionView(views.APIView):
             for name in spo_eduenv_dict.keys():
                 item_data[name] = getattr(item, f"spo_{name}") or 0
 
-            item_data['total_cdi'] = item.spo_total_cdi
-            item_data['total_ssgo'] = item.spo_total_ssgo
-            item_data['total_leaders_league'] = item.spo_total_leaders_league
+            item_data["total_cdi"] = item.spo_total_cdi
+            item_data["total_ssgo"] = item.spo_total_ssgo
+            item_data["total_leaders_league"] = item.spo_total_leaders_league
 
             data[item.id] = item_data
 
@@ -285,35 +293,40 @@ class RegionView(views.APIView):
 
     def get(self, request):
         cte = With(
-            models.EduInstitution.objects.values("type").annotate(
-                type_count=Count("type"),
-                region_id=F("municipality__region_id")
-            ).filter(
+            models.EduInstitution.objects.values("type")
+            .annotate(type_count=Count("type"), region_id=F("municipality__region_id"))
+            .filter(
                 sign=0,
-            ).values('type', "region_id", "type_count").order_by(),
+            )
+            .values("type", "region_id", "type_count")
+            .order_by(),
             materialized=True,
         )
 
-        queryset = models.Region.objects.exclude(id=91).annotate(
-            comp_count_spo=Subquery(
-                cte.queryset().filter(
-                    type=1,
-                    region_id=OuterRef('id')
-                ).values('type_count')
-            ),
-            comp_count_school=Subquery(
-                cte.queryset().filter(
-                    type=0,
-                    region_id=OuterRef('id')
-                ).values('type_count')
-            ),
-            rrc_address=Subquery(
-                models.Rc.objects.filter(region_id=OuterRef("id")).values("address"),
-            ),
-            rrc_email=Subquery(
-                models.Rc.objects.filter(region_id=OuterRef("id")).values("email"),
-            ),
-        ).with_cte(cte)
+        queryset = (
+            models.Region.objects.exclude(id=91)
+            .annotate(
+                comp_count_spo=Subquery(
+                    cte.queryset()
+                    .filter(type=1, region_id=OuterRef("id"))
+                    .values("type_count")
+                ),
+                comp_count_school=Subquery(
+                    cte.queryset()
+                    .filter(type=0, region_id=OuterRef("id"))
+                    .values("type_count")
+                ),
+                rrc_address=Subquery(
+                    models.Rc.objects.filter(region_id=OuterRef("id")).values(
+                        "address"
+                    ),
+                ),
+                rrc_email=Subquery(
+                    models.Rc.objects.filter(region_id=OuterRef("id")).values("email"),
+                ),
+            )
+            .with_cte(cte)
+        )
 
         codegost = self.request.query_params.get("codegost")
 
@@ -328,7 +341,7 @@ class RegionView(views.APIView):
 
         for item in queryset:
             data = RegionSerializer(item).data
-            
+
             data["school"] = school_data.get(item.id)
             data["spo"] = spo_data.get(item.id)
 
