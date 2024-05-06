@@ -7,9 +7,11 @@ from django.db.models import (
     F,
     IntegerField,
     OuterRef,
+    Count, Q, Sum
 )
 from django.db.models.fields.json import KT
 from django.db.models.functions import Cast
+from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django_stubs_ext import WithAnnotations
 from django_cte import With
@@ -82,32 +84,18 @@ class RegionView(views.APIView):
     pagination_class = None
     serializer_class = RegionSerializer
 
-    def get(self, request):
-        cte = With(
-            models.EduInstitution.objects.annotate(
-                region_id=F("municipality__region_id")
-            ).values("id", "sign", "region_id", "eduenv", "type"),
-            materialized=True,
+    def get_school_data(self):
+        cte_queryset = models.EduInstitution.objects.annotate(
+            region_id=F("municipality__region_id")
+        ).filter(
+            type=0,
+        ).values(
+            'region_id',
+            'type',
         )
+        cte = With(cte_queryset)
 
-        eduinstitutions = models.EduInstitution.objects.filter(
-            municipality__region_id=OuterRef("id")
-        )
-
-        queryset = models.Region.objects.exclude(id=91).annotate(
-            comp_count_spo=SubqueryCount(
-                cte.queryset().filter(type=1, sign=0).values_list("id")
-            ),
-            comp_count_school=SubqueryCount(
-                cte.queryset().filter(type=0, sign=0).values_list("id")
-            ),
-            rrc_address=Subquery(
-                models.Rc.objects.filter(region_id=OuterRef("id")).values("address"),
-            ),
-            rrc_email=Subquery(
-                models.Rc.objects.filter(region_id=OuterRef("id")).values("email"),
-            ),
-        ).with_cte(cte)
+        queryset = models.Region.objects.exclude(id=91) # TODO: Hardcode ID is a very bad idead, better come with a better marker
         codegost = self.request.query_params.get("codegost")
 
         if codegost:
@@ -145,6 +133,80 @@ class RegionView(views.APIView):
                 KT("eduenv__y_rescuers_squad"), output_field=IntegerField()
             ),
         }
+
+        for name, lookup in school_eduenv_dict.items():
+            cte_queryset = cte_queryset.annotate(
+                **{
+                    f"school_{name}": Sum(lookup),
+                }
+            )
+
+        cte_queryset = cte_queryset.annotate(
+            school_total_cdi=Count(
+                RawSQL('1', ()),
+                filter=Q(eduenv__cdi=True)
+            ),
+            school_total_ssgo=Count(
+                RawSQL('1', ()),
+                filter=Q(eduenv__ssgo=True)
+            ),
+            school_total_leaders_league=Count(
+                RawSQL('1', ()),
+                filter=Q(eduenv__leaders_league=True)
+            ),
+        )
+
+        cte = With(cte_queryset)
+        queryset = queryset.annotate(
+            school_total_cdi=RawSQL("cte.school_total_cdi", ()),
+            school_total_ssgo=RawSQL("cte.school_total_ssgo", ()),
+            school_total_leaders_league=RawSQL("cte.school_total_leaders_league", ()),
+        )
+        
+        for name, lookup in school_eduenv_dict.items():
+            queryset = queryset.annotate(
+                **{
+                    f"school_{name}": Sum(
+                        getattr(cte.col, f"school_{name}"),
+                    ),
+                }
+            )
+
+        queryset = cte.join(queryset, id=cte.col.region_id).with_cte(cte)
+
+        data = {}
+        for item in queryset:
+            item_data = {}
+            for name in school_eduenv_dict.keys():
+                item_data[name] = getattr(item, f"school_{name}") or 0
+
+            item_data['total_cdi'] = item.school_total_cdi
+            item_data['total_ssgo'] = item.school_total_ssgo
+            item_data['total_leaders_league'] = item.school_total_leaders_league
+
+            data[item.id] = item_data
+
+        return data
+    
+    def get_spo_data(self):
+        cte_queryset = models.EduInstitution.objects.annotate(
+            region_id=F("municipality__region_id")
+        ).filter(
+            type=1,
+        ).values(
+            'region_id',
+            'type',
+        )
+        cte = With(cte_queryset)
+
+        queryset = models.Region.objects.exclude(id=91) # TODO: Hardcode ID is a very bad idead, better come with a better marker
+        codegost = self.request.query_params.get("codegost")
+
+        if codegost:
+            queryset = queryset.filter(
+                codegost=codegost,
+            )
+
         spo_eduenv_dict = {
             "total_kdn": Cast(KT("eduenv__kdn"), output_field=IntegerField()),
             "total_museum": Cast(KT("eduenv__museum"), output_field=IntegerField()),
@@ -166,72 +228,97 @@ class RegionView(views.APIView):
             ),
             "total_ccr": Cast(KT("eduenv__ccr"), output_field=IntegerField()),
         }
-        # Вычисление сумм показателей (Школы)
-        for name, lookup in school_eduenv_dict.items():
-            queryset = queryset.annotate(
-                **{
-                    f"school_{name}": SubquerySum(
-                        cte.queryset().filter(type=0)
-                        .annotate(agg_value=lookup)
-                        .values("agg_value"),
-                        column="agg_value",
-                    ),
-                }
-            )
-        queryset = queryset.annotate(
-            school_total_cdi=SubqueryCount(
-                cte.queryset().filter(type=0, eduenv__cdi=True)
-            ),
-            school_total_ssgo=SubqueryCount(
-                cte.queryset().filter(type=0, eduenv__ssgo=True)
-            ),
-            school_total_leaders_league=SubqueryCount(
-                cte.queryset().filter(type=0, eduenv__leaders_league=True)
-            ),
-        )
-        # Вычисление сумм показателей (СПО)
+
         for name, lookup in spo_eduenv_dict.items():
-            queryset = queryset.annotate(
+            cte_queryset = cte_queryset.annotate(
                 **{
-                    f"spo_{name}": SubquerySum(
-                        cte.queryset().filter(type=1)
-                        .annotate(agg_value=lookup)
-                        .values("agg_value"),
-                        column="agg_value",
-                    ),
+                    f"spo_{name}": Sum(lookup),
                 }
             )
-        queryset = queryset.annotate(
-            spo_total_cyi=SubqueryCount(
-                cte.queryset().filter(type=1, eduenv__cyi=True)
+
+        cte_queryset = cte_queryset.annotate(
+            spo_total_cdi=Count(
+                RawSQL('1', ()),
+                filter=Q(eduenv__cdi=True)
             ),
-            spo_total_ssgo=SubqueryCount(
-                cte.queryset().filter(type=1, eduenv__ssgo=True)
+            spo_total_ssgo=Count(
+                RawSQL('1', ()),
+                filter=Q(eduenv__ssgo=True)
             ),
-            spo_total_leaders_league=SubqueryCount(
-                cte.queryset().filter(type=1, eduenv__leaders_league=True)
+            spo_total_leaders_league=Count(
+                RawSQL('1', ()),
+                filter=Q(eduenv__leaders_league=True)
             ),
         )
 
+        cte = With(cte_queryset)
+        queryset = queryset.annotate(
+            spo_total_cdi=RawSQL("cte.spo_total_cdi", ()),
+            spo_total_ssgo=RawSQL("cte.spo_total_ssgo", ()),
+            spo_total_leaders_league=RawSQL("cte.spo_total_leaders_league", ()),
+        )
+        
+        for name, lookup in spo_eduenv_dict.items():
+            queryset = queryset.annotate(
+                **{
+                    f"spo_{name}": Sum(
+                        getattr(cte.col, f"spo_{name}"),
+                    ),
+                }
+            )
+
+        queryset = cte.join(queryset, id=cte.col.region_id).with_cte(cte)
+
+        data = {}
+        for item in queryset:
+            item_data = {}
+            for name in spo_eduenv_dict.keys():
+                item_data[name] = getattr(item, f"spo_{name}") or 0
+
+            item_data['total_cdi'] = item.spo_total_cdi
+            item_data['total_ssgo'] = item.spo_total_ssgo
+            item_data['total_leaders_league'] = item.spo_total_leaders_league
+
+            data[item.id] = item_data
+
+        return data
+
+    def get(self, request):
+        cte = With(
+            models.EduInstitution.objects.values("type").annotate(
+                type_count=Count("type")
+            ).values('type', "type_count").order_by(),
+            materialized=True,
+        )
+
+        queryset = models.Region.objects.exclude(id=91).annotate(
+            comp_count_spo=Subquery(cte.queryset().filter(type=1).values('type_count')),
+            comp_count_school=Subquery(cte.queryset().filter(type=0).values('type_count')),
+            rrc_address=Subquery(
+                models.Rc.objects.filter(region_id=OuterRef("id")).values("address"),
+            ),
+            rrc_email=Subquery(
+                models.Rc.objects.filter(region_id=OuterRef("id")).values("email"),
+            ),
+        ).with_cte(cte)
+
+        codegost = self.request.query_params.get("codegost")
+
+        if codegost:
+            queryset = queryset.filter(
+                codegost=codegost,
+            )
+
         response_data = []
+        school_data = self.get_school_data()
+        spo_data = self.get_spo_data()
+
         for item in queryset:
             data = RegionSerializer(item).data
-            data["school"] = {}
-            data["spo"] = {}
-            for name in school_eduenv_dict.keys():
-                data["school"][name] = getattr(item, f"school_{name}")
-            data["school"]["total_cdi"] = getattr(item, "school_total_cdi")
-            data["school"]["total_ssgo"] = getattr(item, "school_total_ssgo")
-            data["school"]["total_leaders_league"] = getattr(
-                item, "school_total_leaders_league"
-            )
-            for name in spo_eduenv_dict.keys():
-                data["spo"][name] = getattr(item, f"spo_{name}")
-            data["spo"]["total_cyi"] = getattr(item, "spo_total_cyi")
-            data["spo"]["total_ssgo"] = getattr(item, "spo_total_ssgo")
-            data["spo"]["total_leaders_league"] = getattr(
-                item, "spo_total_leaders_league"
-            )
+            
+            data["school"] = school_data.get(item.id)
+            data["spo"] = spo_data.get(item.id)
+
             response_data.append(data)
         return Response(response_data, status=status.HTTP_200_OK)
 

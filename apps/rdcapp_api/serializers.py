@@ -20,7 +20,7 @@ class RegionSerializer(serializers.ModelSerializer):
     # Annotated Fields
     comp_count_spo = serializers.IntegerField()
     comp_count_school = serializers.IntegerField()
-    comp_indicator_count_eduinst = serializers.SerializerMethodField()
+    # comp_indicator_count_eduinst = serializers.SerializerMethodField()
     rrc_address = serializers.CharField()
     rrc_email = serializers.EmailField()
 
@@ -39,11 +39,11 @@ class RegionSerializer(serializers.ModelSerializer):
             # Annotated Fields
             "comp_count_spo",
             "comp_count_school",
-            # "comp_count_museum",
+            # # "comp_count_museum",
             "rrc_address",
             "rrc_email",
             # Method Fields
-            "comp_indicator_count_eduinst",
+            #"comp_indicator_count_eduinst",
         )
 
     def get_comp_indicator_count_eduinst(self, obj):
