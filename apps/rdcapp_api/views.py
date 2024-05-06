@@ -12,6 +12,7 @@ from django.db.models.fields.json import KT
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django_stubs_ext import WithAnnotations
+from django_cte import With
 from rest_framework import generics, permissions, status, views
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -82,16 +83,23 @@ class RegionView(views.APIView):
     serializer_class = RegionSerializer
 
     def get(self, request):
+        cte = With(
+            models.EduInstitution.objects.annotate(
+                region_id=F("municipality__region_id")
+            ).values("id", "sign", "region_id", "eduenv", "type"),
+            materialized=True,
+        )
+
         eduinstitutions = models.EduInstitution.objects.filter(
             municipality__region_id=OuterRef("id")
         )
 
         queryset = models.Region.objects.exclude(id=91).annotate(
             comp_count_spo=SubqueryCount(
-                eduinstitutions.filter(type=1, sign=0).values_list("id")
+                cte.queryset().filter(type=1, sign=0).values_list("id")
             ),
             comp_count_school=SubqueryCount(
-                eduinstitutions.filter(type=0, sign=0).values_list("id")
+                cte.queryset().filter(type=0, sign=0).values_list("id")
             ),
             rrc_address=Subquery(
                 models.Rc.objects.filter(region_id=OuterRef("id")).values("address"),
@@ -99,7 +107,7 @@ class RegionView(views.APIView):
             rrc_email=Subquery(
                 models.Rc.objects.filter(region_id=OuterRef("id")).values("email"),
             ),
-        )
+        ).with_cte(cte)
         codegost = self.request.query_params.get("codegost")
 
         if codegost:
@@ -163,7 +171,7 @@ class RegionView(views.APIView):
             queryset = queryset.annotate(
                 **{
                     f"school_{name}": SubquerySum(
-                        eduinstitutions.filter(type=0)
+                        cte.queryset().filter(type=0)
                         .annotate(agg_value=lookup)
                         .values("agg_value"),
                         column="agg_value",
@@ -172,13 +180,13 @@ class RegionView(views.APIView):
             )
         queryset = queryset.annotate(
             school_total_cdi=SubqueryCount(
-                eduinstitutions.filter(type=0, eduenv__cdi=True)
+                cte.queryset().filter(type=0, eduenv__cdi=True)
             ),
             school_total_ssgo=SubqueryCount(
-                eduinstitutions.filter(type=0, eduenv__ssgo=True)
+                cte.queryset().filter(type=0, eduenv__ssgo=True)
             ),
             school_total_leaders_league=SubqueryCount(
-                eduinstitutions.filter(type=0, eduenv__leaders_league=True)
+                cte.queryset().filter(type=0, eduenv__leaders_league=True)
             ),
         )
         # Вычисление сумм показателей (СПО)
@@ -186,7 +194,7 @@ class RegionView(views.APIView):
             queryset = queryset.annotate(
                 **{
                     f"spo_{name}": SubquerySum(
-                        eduinstitutions.filter(type=1)
+                        cte.queryset().filter(type=1)
                         .annotate(agg_value=lookup)
                         .values("agg_value"),
                         column="agg_value",
@@ -195,13 +203,13 @@ class RegionView(views.APIView):
             )
         queryset = queryset.annotate(
             spo_total_cyi=SubqueryCount(
-                eduinstitutions.filter(type=1, eduenv__cyi=True)
+                cte.queryset().filter(type=1, eduenv__cyi=True)
             ),
             spo_total_ssgo=SubqueryCount(
-                eduinstitutions.filter(type=1, eduenv__ssgo=True)
+                cte.queryset().filter(type=1, eduenv__ssgo=True)
             ),
             spo_total_leaders_league=SubqueryCount(
-                eduinstitutions.filter(type=1, eduenv__leaders_league=True)
+                cte.queryset().filter(type=1, eduenv__leaders_league=True)
             ),
         )
 

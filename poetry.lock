@@ -322,6 +322,17 @@ asgiref = ">=3.6"
 Django = ">=3.2"
 
 [[package]]
+name = "django-cte"
+version = "1.3.2"
+description = "Common Table Expressions (CTE) for Django"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-cte-1.3.2.tar.gz", hash = "sha256:841b264f83417d421393c8c4644f76300962c6c3ddbc37339cf99672eb3696a2"},
+    {file = "django_cte-1.3.2-py2.py3-none-any.whl", hash = "sha256:9ca0a900df4819bbe86447a594f27272d67069f3ef13da61e905b0ace67704e9"},
+]
+
+[[package]]
 name = "django-debug-toolbar"
 version = "4.3.0"
 description = "A configurable set of panels that display various debug information about the current request/response."
@@ -1391,4 +1402,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "bcf23bc9c9f5ef1ce913e45447631a12e4a27b47f4dd465b860fff87121582a0"
+content-hash = "9f93b8b5727f9291cdf9c688ea7f5378e59840821c902770ac4220ecba738b37"

@@ -6,6 +6,8 @@ from .common.schemas import EDUENV_JSON_FIELD_SCHEMA
 from .common.validators.edu_space_validator import EduSpaceType
 from .common.validators.json_validator import JSONSchemaValidator
 
+from django_cte import CTEManager
+
 
 # Модели региональной информации
 class District(models.Model):
@@ -24,6 +26,8 @@ class Region(models.Model):
     population = models.IntegerField(blank=True, null=True)
     count_school = models.IntegerField(blank=True, null=True)
     count_spo = models.IntegerField(blank=True, null=True)
+
+    objects = CTEManager()
 
     def __str__(self):
         return f"{self.title}, {self.get_total_eduinst()}"
@@ -159,6 +163,8 @@ class EduInstitution(models.Model):
         null=True,
         validators=(JSONSchemaValidator(limit_value=EDUENV_JSON_FIELD_SCHEMA),),
     )
+
+    objects = CTEManager()
 
     def __str__(self):
         return f"{self.title}"
