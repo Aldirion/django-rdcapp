@@ -288,13 +288,23 @@ class RegionView(views.APIView):
             models.EduInstitution.objects.values("type").annotate(
                 type_count=Count("type"),
                 region_id=F("municipality__region_id")
-            ).values('type', "region_id", "type_count").order_by(),
+            ).values('type', "region_id", "sign", "type_count").order_by(),
             materialized=True,
         )
 
         queryset = models.Region.objects.exclude(id=91).annotate(
-            comp_count_spo=Subquery(cte.queryset().filter(type=1, region_id=OuterRef('id')).values('type_count')),
-            comp_count_school=Subquery(cte.queryset().filter(type=0, region_id=OuterRef('id')).values('type_count')),
+            comp_count_spo=Subquery(
+                cte.queryset().filter(
+                    type=1, sign=0,
+                    region_id=OuterRef('id')
+                ).values('type_count')
+            ),
+            comp_count_school=Subquery(
+                cte.queryset().filter(
+                    type=0, sign=0,
+                    region_id=OuterRef('id')
+                ).values('type_count')
+            ),
             rrc_address=Subquery(
                 models.Rc.objects.filter(region_id=OuterRef("id")).values("address"),
             ),
