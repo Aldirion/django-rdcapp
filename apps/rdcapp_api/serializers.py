@@ -20,7 +20,7 @@ class RegionSerializer(serializers.ModelSerializer):
     # Annotated Fields
     comp_count_spo = serializers.IntegerField()
     comp_count_school = serializers.IntegerField()
-    # comp_indicator_count_eduinst = serializers.SerializerMethodField()
+    comp_indicator_count_eduinst = serializers.SerializerMethodField()
     rrc_address = serializers.CharField()
     rrc_email = serializers.EmailField()
 
@@ -43,16 +43,22 @@ class RegionSerializer(serializers.ModelSerializer):
             "rrc_address",
             "rrc_email",
             # Method Fields
-            #"comp_indicator_count_eduinst",
+            "comp_indicator_count_eduinst",
         )
 
     def get_comp_indicator_count_eduinst(self, obj):
         # color=(255-255*val//100, 255*val//100, 0)
-        return round(
-            (obj.comp_count_spo + obj.comp_count_school)
-            / (obj.count_spo + obj.count_school)
-            * 100
-        )
+        if obj.count_school is not None and obj.count_spo is not None:
+            if obj.comp_count_school is not None and obj.comp_count_spo is not None:
+                return round(
+                    (obj.comp_count_spo + obj.comp_count_school)
+                    / (obj.count_spo + obj.count_school)
+                    * 100
+                )
+            else:
+                return 0
+        else:
+            return 100
 
 
 class Counter:
