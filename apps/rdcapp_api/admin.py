@@ -68,7 +68,7 @@ class MunicipalityResource(resources.ModelResource):
 
 class MunicipalityAdmin(ImportExportActionModelAdmin):
     resource_class = MunicipalityResource
-    list_display = ("title", "region_title", "count_school", "count_spo")
+    list_display = ("title", "region_title", "count_school", "count_spo", "codegost")
     list_filter = [
         ("region", admin.RelatedFieldListFilter),
     ]

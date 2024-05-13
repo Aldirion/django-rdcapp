@@ -43,6 +43,7 @@ class Municipality(models.Model):
     count_school = models.IntegerField(blank=True, null=True)
     count_spo = models.IntegerField(blank=True, null=True)
     oktmo5 = models.CharField(blank=True, null=True)
+    codegost = models.CharField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.title}"

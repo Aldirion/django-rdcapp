@@ -187,6 +187,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "email",
             "quote",
             "region_id",
+            "avatar",
+            "user"
         )
 
 
