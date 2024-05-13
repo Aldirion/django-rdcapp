@@ -88,6 +88,7 @@ class MunicipalitySerializer(serializers.ModelSerializer):
             "title",
             "region",
             "oktmo5",
+            "codegost",
             "count_school",
             "count_spo",
             # Annotated Fields
