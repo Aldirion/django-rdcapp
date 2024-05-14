@@ -149,9 +149,10 @@ class EduInstAdmin(ImportExportActionModelAdmin):
         "inn",
         "kpp",
         "title",
+        "contingent",
         "eduenv",
     )
-    list_filter = ["sign", "is_adviser_post_introduced"]
+    list_filter = ["sign", "type", "is_adviser_post_introduced"]
     search_fields = [
         "id",
         "title",

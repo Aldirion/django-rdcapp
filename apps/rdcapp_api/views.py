@@ -18,6 +18,7 @@ from . import models
 from .serializers import (
     EmployeeProfileSerializer,
     EmployeeSerializer,
+    FedEmployeeSerializer,
     MunicipalitySerializer,
     RegionSerializer,
     SchoolDetailSerializer,
@@ -384,6 +385,46 @@ class RegionEmployeeView(views.APIView):
         # print (response)
         return Response(response, status=status.HTTP_200_OK)
 
+class FederalEmployeeQuerySet(TypedDict):
+    post_title: str
+    post_subdivision: str
+
+# @permission_classes([permissions.IsAuthenticated])
+class FederalEmployeeView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        # subdivisions = tuple(models.Subdivision.objects)
+        employees = tuple(
+                models.Employee.objects.filter(region_id=91) #TODO: HARDCODE id BAD refactor
+                .annotate(
+                    post_title=F("employeepost__post__title"),
+                    post_subdivision=F("employeepost__post__subdivision__title"),
+                    post_sd_id=F("employeepost__post__subdivision__id"),
+                    post_sd_par=F("employeepost__post__subdivision__parent"),
+                    post_sd_par_t=F("employeepost__post__subdivision__parent__title"),
+                )
+                .order_by("employeepost__post__priority")
+            )
+        deps = defaultdict(
+            lambda: {
+                "count":0,
+                "data": list()
+            }
+        )
+        response = defaultdict(
+                lambda: {
+                    "count": 0,
+                    "data": list(),
+                    "departments": dict()
+                }
+            )
+        # for subdiv in subdivisions:
+        #     item = deps[subdiv]
+
+        for employee in employees:
+            item = response[employee.post_subdivision]
+            item["count"] += 1
+            item["data"].append(FedEmployeeSerializer(employee).data)
+        return Response(response, status=status.HTTP_200_OK)
 
 # def MySum(Sum)
 class RegionMunicipalityView(views.APIView):

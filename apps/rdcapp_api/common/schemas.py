@@ -89,7 +89,7 @@ EDUENV_JSON_FIELD_SCHEMA = {
                     "type": "integer",
                 },
                 "cyi": {
-                    "title": "Открыт ли в школе центр детских инициатив",
+                    "title": "Открыт ли в школе центр молодежных инициатив",
                     "type": "boolean",
                 },
                 "ssgo": {

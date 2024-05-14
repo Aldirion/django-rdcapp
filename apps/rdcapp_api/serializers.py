@@ -192,6 +192,28 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "user"
         )
 
+class FedEmployeeSerializer(serializers.ModelSerializer):
+    post_title = serializers.CharField()
+    # post_subdivision = serializers.CharField()
+    post_sd_par_t = serializers.CharField()
+    class Meta:
+        model = Employee
+        fields: tuple[str, ...] = (
+            # Model Fields
+            "id",
+            "firstname",
+            "lastname",
+            "patronymic",
+            "email",
+            "quote",
+            "region_id",
+            "avatar",
+            "user",
+            # Annotated Fields
+            "post_title",
+            "post_sd_par_t"
+            # "post_subdivision"
+        )
 
 # EduInstitution Serializers
 class EduInstTypeSerializer(serializers.ModelSerializer):

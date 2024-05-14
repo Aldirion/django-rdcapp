@@ -93,5 +93,6 @@ urlpatterns = [
             ]
         ),
     ),
+    path("rdc_team/", views.FederalEmployeeView.as_view())
     # path("users/me/", views.get_profile, name="profile_detail"),
 ]
