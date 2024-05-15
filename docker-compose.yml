@@ -10,7 +10,8 @@ services:
       - ./envs/local/django.env
     volumes:
       - .:/app
-      - static_files:/static
+      - /static:/static
+      - /media:/media
     ports:
       - 8000:8000
     depends_on:
@@ -35,7 +36,6 @@ services:
 
 volumes:
   pg_data:
-  static_files:
 
 networks:
  default_rdc_network:

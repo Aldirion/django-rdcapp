@@ -11,26 +11,29 @@ services:
     volumes:
       - .:/app
       - /static:/static
+      - /media:/media
     ports:
       - 8000:8000
     depends_on:
       - db
     networks:
-      - default_rdc_network
+      - prod_rdc_network
+    stdin_open: true
+    tty: true
       
   db:
     image: postgres:16
     volumes:
       - ./dumps:/dumps
       - ./deploy/restore_db.sh:/restore_db.sh
-      - pg_data:/var/lib/postgresql/pg_data
+      - pg_data_prod:/var/lib/postgresql/data
     env_file:
       - ./envs/prod/db.env
     networks:
-      - default_rdc_network
+      - prod_rdc_network
 
 volumes:
-  pg_data:
+  pg_data_prod:
 
 networks:
- default_rdc_network:
+ prod_rdc_network:
