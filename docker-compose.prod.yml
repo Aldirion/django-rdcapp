@@ -4,38 +4,33 @@ services:
   django:
     build:
       context: .
-      dockerfile: ./deploy/local/django/Dockerfile
+      dockerfile: ./deploy/prod/django/Dockerfile
     env_file:
-      - ./envs/local/db.env
-      - ./envs/local/django.env
+      - ./envs/prod/db.env
+      - ./envs/prod/django.env
     volumes:
       - .:/app
-      - static_files:/static
+      - /static:/static
     ports:
       - 8000:8000
     depends_on:
       - db
     networks:
       - default_rdc_network
-    stdin_open: true
-    tty: true
       
   db:
     image: postgres:16
-    ports:
-      - 5433:5432
     volumes:
       - ./dumps:/dumps
       - ./deploy/restore_db.sh:/restore_db.sh
       - pg_data:/var/lib/postgresql/pg_data
     env_file:
-      - ./envs/local/db.env
+      - ./envs/prod/db.env
     networks:
       - default_rdc_network
 
 volumes:
   pg_data:
-  static_files:
 
 networks:
  default_rdc_network:
