@@ -392,7 +392,7 @@ class FederalEmployeeQuerySet(TypedDict):
 # @permission_classes([permissions.IsAuthenticated])
 class FederalEmployeeView(views.APIView):
     def get(self, request, *args, **kwargs):
-        # subdivisions = tuple(models.Subdivision.objects)
+        subdivisions = tuple(models.Subdivision.objects.all())
         employees = tuple(
                 models.Employee.objects.filter(region_id=91) #TODO: HARDCODE id BAD refactor
                 .annotate(
@@ -404,27 +404,41 @@ class FederalEmployeeView(views.APIView):
                 )
                 .order_by("employeepost__post__priority")
             )
-        deps = defaultdict(
-            lambda: {
-                "count":0,
-                "data": list()
-            }
-        )
         response = defaultdict(
                 lambda: {
                     "count": 0,
                     "data": list(),
-                    "departments": dict()
                 }
             )
-        # for subdiv in subdivisions:
-        #     item = deps[subdiv]
-
-        for employee in employees:
-            item = response[employee.post_subdivision]
-            item["count"] += 1
-            item["data"].append(FedEmployeeSerializer(employee).data)
-        return Response(response, status=status.HTTP_200_OK)
+        deps = defaultdict(
+            lambda: {
+                "count":0,
+                "employees": list(),
+                "departments": defaultdict(
+                    lambda: {
+                        "count": 0,
+                        "data": list(),
+                }),
+            }
+        )
+        for subdiv in subdivisions:
+            if subdiv.parent is None:
+                it = deps[subdiv.title]
+                for employee in employees:
+                    if employee.post_sd_id == subdiv.pk:
+                        item = response[employee.post_subdivision]
+                        it["count"] += 1
+                        it["employees"].append(FedEmployeeSerializer(employee).data)
+            else:
+                it = deps[subdiv.parent.title]
+                for employee in employees:
+                    if employee.post_sd_id == subdiv.pk:
+                        item = response[employee.post_subdivision]
+                        it["count"] += 1
+                        item["count"] += 1
+                        item["data"].append(FedEmployeeSerializer(employee).data)
+                    it["departments"][subdiv.title] = item
+        return Response(deps, status=status.HTTP_200_OK)
 
 # def MySum(Sum)
 class RegionMunicipalityView(views.APIView):
