@@ -408,13 +408,12 @@ class FederalEmployeeView(views.APIView):
                 lambda: {
                     "count": 0,
                     "data": list(),
-                    # "departments": dict()
                 }
             )
         deps = defaultdict(
             lambda: {
                 "count":0,
-                "data": list(),
+                "employees": list(),
                 "departments": defaultdict(
                     lambda: {
                         "count": 0,
@@ -425,40 +424,20 @@ class FederalEmployeeView(views.APIView):
         for subdiv in subdivisions:
             if subdiv.parent is None:
                 it = deps[subdiv.title]
-                it["count"] += 1
                 for employee in employees:
                     if employee.post_sd_id == subdiv.pk:
                         item = response[employee.post_subdivision]
-                        item["count"] +=1
-                        item["data"].append(FedEmployeeSerializer(employee).data)
-                it["data"].append(item)
+                        it["count"] += 1
+                        it["employees"].append(FedEmployeeSerializer(employee).data)
             else:
                 it = deps[subdiv.parent.title]
-                it["count"] += 1
                 for employee in employees:
                     if employee.post_sd_id == subdiv.pk:
                         item = response[employee.post_subdivision]
-                        item["count"] +=1
+                        it["count"] += 1
+                        item["count"] += 1
                         item["data"].append(FedEmployeeSerializer(employee).data)
                     it["departments"][subdiv.title] = item
-            # else:
-            #     it = deps[subdiv.title]
-            #     it["count"] += 1
-            #     for employee in employees:
-            #         item = response[employee.post_subdivision]
-            #         item["count"] += 1
-            #         item["data"].append(FedEmployeeSerializer(employee).data)
-            #     it["departments"] = item
-
-            # if subdiv.parent is not None and subdiv.parent == it[subdiv.parent.title]:
-
-        # for subdiv in subdivisions:
-        #     item = deps[subdiv]
-
-        # for employee in employees:
-        #     item = response[employee.post_subdivision]
-        #     item["count"] += 1
-        #     item["data"].append(FedEmployeeSerializer(employee).data)
         return Response(deps, status=status.HTTP_200_OK)
 
 # def MySum(Sum)
